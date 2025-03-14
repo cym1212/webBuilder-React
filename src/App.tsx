@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { Provider, useDispatch } from 'react-redux';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import store from './redux/store'; 
 import { loadSavedProjects } from './redux/editorSlice';
 import EditorCanvas from './components/EditorCanvas';
 import ComponentLibrary from './components/ComponentLibrary';
@@ -10,15 +11,15 @@ import ProjectManager from './components/ProjectManager';
 import ExportButton from './utils/ExportButton';
 import './App.css';
 
-function App() {
+function AppContent() {
   const dispatch = useDispatch();
-  
+
   useEffect(() => {
     dispatch(loadSavedProjects());
   }, [dispatch]);
-  
+
   return (
-    <DndProvider backend={HTML5Backend}>
+    <DndProvider backend={HTML5Backend}>  
       <div className="app-container">
         <header className="app-header">
           <h1>웹 빌더</h1>
@@ -27,7 +28,7 @@ function App() {
             <ExportButton />
           </div>
         </header>
-        
+
         <main className="app-main">
           <ComponentLibrary />
           <EditorCanvas />
@@ -35,6 +36,14 @@ function App() {
         </main>
       </div>
     </DndProvider>
+  );
+}
+
+function App() {
+  return (
+    <Provider store={store}>  
+      <AppContent />
+    </Provider>
   );
 }
 

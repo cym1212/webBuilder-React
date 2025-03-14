@@ -1,0 +1,84 @@
+/* ComponentRenderer.css */
+.placed-component {
+  position: relative;
+}
+
+.placed-component:hover {
+  outline: 2px solid #4a90e2;
+}
+
+/* 리사이즈 핸들 스타일 */
+.resize-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background-color: #4a90e2;
+  border-radius: 50%;
+  border: 2px solid white;
+  z-index: 10;
+}
+
+/* 각 방향별 핸들 위치 */
+.resize-handle.e {
+  right: -5px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: e-resize;
+}
+
+.resize-handle.w {
+  left: -5px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: w-resize;
+}
+
+.resize-handle.s {
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: s-resize;
+}
+
+.resize-handle.n {
+  top: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: n-resize;
+}
+
+.resize-handle.se {
+  bottom: -5px;
+  right: -5px;
+  cursor: se-resize;
+}
+
+.resize-handle.sw {
+  bottom: -5px;
+  left: -5px;
+  cursor: sw-resize;
+}
+
+.resize-handle.ne {
+  top: -5px;
+  right: -5px;
+  cursor: ne-resize;
+}
+
+.resize-handle.nw {
+  top: -5px;
+  left: -5px;
+  cursor: nw-resize;
+}
+
+/* 선택된 컴포넌트 스타일 */
+.selected-component {
+  outline: 2px solid #4a90e2;
+  outline-offset: 1px;
+}
+
+/* 드래그 중인 컴포넌트 스타일 */
+.dragging {
+  opacity: 0.5;
+  cursor: grabbing !important;
+} 

@@ -76,6 +76,13 @@ export const editorSlice = createSlice({
     deleteProject: (state, action) => {
       state.savedProjects = state.savedProjects.filter(p => p.id !== action.payload);
       localStorage.setItem('savedProjects', JSON.stringify(state.savedProjects));
+    },
+    updateComponentPosition: (state, action) => {
+      const { id, newPosition } = action.payload;
+      const component = state.components.find(comp => comp.id === id);
+      if (component) {
+        component.position = newPosition;  
+      }
     }
   }
 });
@@ -90,7 +97,8 @@ export const {
   loadProject,
   loadSavedProjects,
   deleteProject,
-  loadComponents
+  loadComponents,
+  updateComponentPosition
 } = editorSlice.actions;
 
 export const selectComponents = (state) => state.editor.components;
