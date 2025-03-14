@@ -8,7 +8,8 @@ import EditorCanvas from './components/EditorCanvas';
 import ComponentLibrary from './components/ComponentLibrary';
 import PropertyPanel from './components/PropertyPanel';
 import ProjectManager from './components/ProjectManager';
-import ExportButton from './utils/ExportButton';
+import BuildButton from './utils/BuildButton';
+
 import './App.css';
 
 function AppContent() {
@@ -25,7 +26,7 @@ function AppContent() {
           <h1>웹 빌더</h1>
           <div className="header-actions">
             <ProjectManager />
-            <ExportButton />
+            <BuildButton />
           </div>
         </header>
 

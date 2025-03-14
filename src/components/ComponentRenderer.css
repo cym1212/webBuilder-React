@@ -7,8 +7,8 @@
   outline: 2px solid #4a90e2;
 }
 
-/* 리사이즈 핸들 스타일 */
-.resize-handle {
+/* 리사이즈 핸들 스타일 커스터마이징 */
+.react-resizable-handle {
   position: absolute;
   width: 10px;
   height: 10px;
@@ -19,56 +19,56 @@
 }
 
 /* 각 방향별 핸들 위치 */
-.resize-handle.e {
-  right: -5px;
-  top: 50%;
-  transform: translateY(-50%);
-  cursor: e-resize;
-}
-
-.resize-handle.w {
-  left: -5px;
-  top: 50%;
-  transform: translateY(-50%);
-  cursor: w-resize;
-}
-
-.resize-handle.s {
-  bottom: -5px;
-  left: 50%;
-  transform: translateX(-50%);
-  cursor: s-resize;
-}
-
-.resize-handle.n {
-  top: -5px;
-  left: 50%;
-  transform: translateX(-50%);
-  cursor: n-resize;
-}
-
-.resize-handle.se {
+.react-resizable-handle-se {
   bottom: -5px;
   right: -5px;
   cursor: se-resize;
 }
 
-.resize-handle.sw {
+.react-resizable-handle-sw {
   bottom: -5px;
   left: -5px;
   cursor: sw-resize;
 }
 
-.resize-handle.ne {
+.react-resizable-handle-ne {
   top: -5px;
   right: -5px;
   cursor: ne-resize;
 }
 
-.resize-handle.nw {
+.react-resizable-handle-nw {
   top: -5px;
   left: -5px;
   cursor: nw-resize;
+}
+
+.react-resizable-handle-e {
+  right: -5px;
+  top: 50%;
+  margin-top: -5px;
+  cursor: e-resize;
+}
+
+.react-resizable-handle-w {
+  left: -5px;
+  top: 50%;
+  margin-top: -5px;
+  cursor: w-resize;
+}
+
+.react-resizable-handle-s {
+  bottom: -5px;
+  left: 50%;
+  margin-left: -5px;
+  cursor: s-resize;
+}
+
+.react-resizable-handle-n {
+  top: -5px;
+  left: 50%;
+  margin-left: -5px;
+  cursor: n-resize;
 }
 
 /* 선택된 컴포넌트 스타일 */

@@ -11,6 +11,7 @@ import {
   selectComponents,
   loadComponents
 } from '../redux/editorSlice';
+import buildAndDownloadBuildFolder from '../utils/buildAndDownloadBuildFolder';
 
 function ProjectManager() {
   const dispatch = useDispatch();
