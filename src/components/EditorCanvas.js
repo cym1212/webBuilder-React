@@ -93,19 +93,23 @@ function EditorCanvas() {
       let x = offset.x - canvasRect.left;
       let y = offset.y - canvasRect.top;
 
-      // ✅ 겹치지 않는 위치로 이동
-      // const { x: newX, y: newY } = getNonOverlappingPosition(x, y, 150, 50);
+      // 컴포넌트 타입에 따른 기본 크기 설정
+      let defaultWidth = 150;
+      let defaultHeight = 50;
+      
+      if (item.type === 'LOGIN') {
+        defaultWidth = 300;
+        defaultHeight = 300;
+      }
 
       if (item.id) {
         dispatch(updateComponentPosition({ id: item.id, newPosition: { x: x, y: y } }));
-        // dispatch(updateComponentPosition({ id: item.id, newPosition: { x: newX, y: newY } }));
       } else {
         dispatch(addComponent({
           id: uuidv4(),
           type: item.type,
           position: { x: x, y: y },
-          // position: { x: newX, y: newY },
-          size: { width: 150, height: 50 },
+          size: { width: defaultWidth, height: defaultHeight },
           style: {},
           content: getDefaultContent(item.type),
         }));
@@ -124,6 +128,8 @@ function EditorCanvas() {
         return { src: 'https://via.placeholder.com/150', alt: '이미지' };
       case 'BUTTON':
         return '버튼';
+      case 'LOGIN':
+        return '로그인 폼';
       default:
         return '';
     }

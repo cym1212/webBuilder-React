@@ -92,6 +92,14 @@ const buildAndDownloadBuildFolder = async () => {
       background_color: '#ffffff'
     }, null, 2));
     
+    // 프로젝트 JSON 데이터 추가 (나중에 불러오기 위함)
+    const projectData = {
+      name: projectName,
+      components: components,
+      timestamp: new Date().toISOString()
+    };
+    zip.file('project-data.json', JSON.stringify(projectData, null, 2));
+    
     // ZIP 파일 생성 및 다운로드
     const content = await zip.generateAsync({ type: 'blob' });
     saveAs(content, `${projectName.replace(/\s+/g, '-').toLowerCase()}-build.zip`);

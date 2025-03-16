@@ -9,6 +9,7 @@ import ComponentLibrary from './components/ComponentLibrary';
 import PropertyPanel from './components/PropertyPanel';
 import ProjectManager from './components/ProjectManager';
 import BuildButton from './utils/BuildButton';
+import ProjectImportExport from './utils/ProjectImportExport';
 
 import './App.css';
 
@@ -26,6 +27,7 @@ function AppContent() {
           <h1>웹 빌더</h1>
           <div className="header-actions">
             <ProjectManager />
+            <ProjectImportExport />
             <BuildButton />
           </div>
         </header>

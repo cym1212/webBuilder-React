@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
-import buildAndDownloadBuildFolder from '../utils/buildAndDownloadBuildFolder';  
+import { useSelector } from 'react-redux';
+import { selectProjectName } from '../redux/editorSlice';
+import buildAndDownloadBuildFolder from '../utils/buildAndDownloadBuildFolder';
 
 function BuildButton() {
   const [isBuilding, setIsBuilding] = useState(false);
+  
+  const projectName = useSelector(selectProjectName);
 
   const handleBuild = async () => {
     try {
@@ -23,14 +27,16 @@ function BuildButton() {
   };
 
   return (
-    <button 
-      className="build-button" 
-      onClick={handleBuild}
-      disabled={isBuilding}
-      title="현재 작업 중인 프로젝트를 빌드하여 build 폴더를 다운로드합니다"
-    >
-      {isBuilding ? '빌드 중...' : '📦 빌드 및 다운로드'}
-    </button>
+    <div className="build-actions">
+      <button 
+        className="build-button" 
+        onClick={handleBuild}
+        disabled={isBuilding}
+        title="현재 작업 중인 프로젝트를 빌드하여 build 폴더를 다운로드합니다"
+      >
+        {isBuilding ? '빌드 중...' : '📦 빌드 파일 다운로드'}
+      </button>
+    </div>
   );
 }
 

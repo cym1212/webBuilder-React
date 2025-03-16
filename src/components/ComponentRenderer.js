@@ -6,6 +6,10 @@ import TextComponent from './TextComponent';
 import ImageComponent from './ImageComponent';
 import ContainerComponent from './ContainerComponent';
 import ButtonComponent from './ButtonComponent';
+import LoginForm from './LoginForm';
+import BoardComponent from './BoardComponent';
+import DetailPageComponent from './DetailPageComponent';
+import { COMPONENT_TYPES } from '../constants';
 import './ComponentRenderer.css';
 
 function ComponentRenderer({ component }) {
@@ -149,14 +153,20 @@ function ComponentRenderer({ component }) {
   
   const renderComponent = () => {
     switch(component.type) {
-      case 'TEXT':
+      case COMPONENT_TYPES.TEXT:
         return <TextComponent content={component.content} style={component.style} />;
-      case 'IMAGE':
+      case COMPONENT_TYPES.IMAGE:
         return <ImageComponent src={component.content.src} alt={component.content.alt} style={component.style} />;
-      case 'CONTAINER':
+      case COMPONENT_TYPES.CONTAINER:
         return <ContainerComponent style={component.style} />;
-      case 'BUTTON':
+      case COMPONENT_TYPES.BUTTON:
         return <ButtonComponent content={component.content} style={component.style} />;
+      case COMPONENT_TYPES.LOGIN:
+        return <LoginForm style={component.style} />;
+      case COMPONENT_TYPES.BOARD:
+        return <BoardComponent style={component.style} data={component.data} />;
+      case COMPONENT_TYPES.DETAIL_PAGE:
+        return <DetailPageComponent style={component.style} data={component.data} />;
       default:
         return null;
     }
@@ -198,3 +208,4 @@ function ComponentRenderer({ component }) {
 }
 
 export default ComponentRenderer;
+

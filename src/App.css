@@ -231,14 +231,14 @@ body {
 }
 
 .build-button {
-  background-color: #28a745;
-  color: white;
+  padding: 8px 12px;
   border: none;
   border-radius: 4px;
-  padding: 8px 16px;
-  font-size: 14px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  font-size: 14px;
+  color: white;
+  transition: background-color 0.2s;
+  background-color: #28a745;
 }
 
 .build-button:hover {
@@ -266,6 +266,236 @@ body {
 }
 
 .source-button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.draggable-component {
+  padding: 8px;
+  border: 1px solid #ccc;
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.drop-zone {
+  margin-top: 20px;
+  padding: 20px;
+  border: 2px dashed #aaa;
+  min-height: 200px;
+  background: #f9f9f9;
+}
+
+.dropped-component {
+  padding: 10px;
+  background: #fff;
+  border: 1px solid #ccc;
+  margin: 5px 0;
+}
+
+.login-form {
+  border: 1px solid #ddd;
+  padding: 10px;
+  background: #fff;
+}
+
+/* S3 업로드 관련 스타일 */
+.build-actions {
+  display: flex;
+  gap: 10px;
+  position: relative;
+}
+
+.s3-upload-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.s3-upload-button:hover {
+  background-color: #0069d9;
+}
+
+.s3-upload-button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.s3-config-modal {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 300px;
+  background-color: white;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+  z-index: 1000;
+  margin-top: 5px;
+}
+
+.s3-config-modal h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 16px;
+  border-bottom: 1px solid #dee2e6;
+  padding-bottom: 8px;
+}
+
+.form-group {
+  margin-bottom: 12px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 15px;
+}
+
+.form-actions button {
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.form-actions button[type="button"] {
+  background-color: #f8f9fa;
+  border: 1px solid #ced4da;
+  color: #212529;
+}
+
+.form-actions button[type="submit"] {
+  background-color: #28a745;
+  border: 1px solid #28a745;
+  color: white;
+}
+
+.form-actions button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* 프로젝트 가져오기/내보내기 스타일 */
+.project-import-export {
+  display: flex;
+  gap: 8px;
+}
+
+.export-button,
+.import-button {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.export-button:hover,
+.import-button:hover {
+  background-color: #5a6268;
+}
+
+/* 게시판 컴포넌트 스타일 */
+.board-component {
+  font-family: Arial, sans-serif;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+}
+
+.board-component table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.board-component th,
+.board-component td {
+  padding: 8px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.board-component th {
+  background-color: #f8f9fa;
+  font-weight: bold;
+  text-align: center;
+}
+
+/* 상세 페이지 컴포넌트 스타일 */
+.detail-page-component {
+  font-family: Arial, sans-serif;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+}
+
+.detail-page-component h2 {
+  margin-top: 0;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 10px;
+}
+
+.detail-page-component img {
+  max-width: 100%;
+  border: 1px solid #eee;
+}
+
+/* 빌드 및 정적 파일 다운로드 버튼 스타일 */
+.build-button, 
+.static-button {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  color: white;
+  transition: background-color 0.2s;
+}
+
+.build-button {
+  background-color: #28a745;
+}
+
+.build-button:hover {
+  background-color: #218838;
+}
+
+.static-button {
+  background-color: #007bff;
+}
+
+.static-button:hover {
+  background-color: #0069d9;
+}
+
+.build-button:disabled,
+.static-button:disabled {
   background-color: #6c757d;
   cursor: not-allowed;
 }
