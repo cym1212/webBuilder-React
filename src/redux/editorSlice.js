@@ -33,11 +33,14 @@ export const editorSlice = createSlice({
       // 기본 데이터 설정
       let defaultData = {};
       if (component.type === COMPONENT_TYPES.BOARD) {
-        defaultData = [
-          { id: 1, title: '게시판 제목 예시 1', author: '작성자1', date: '2023-05-01', views: 42 },
-          { id: 2, title: '게시판 제목 예시 2', author: '작성자2', date: '2023-05-02', views: 31 },
-          { id: 3, title: '게시판 제목 예시 3', author: '작성자3', date: '2023-05-03', views: 28 },
-        ];
+        defaultData = {
+          title: '게시판',
+          items: [
+            { id: 1, title: '게시판 제목 예시 1', author: '작성자1', date: '2023-05-01', views: 42 },
+            { id: 2, title: '게시판 제목 예시 2', author: '작성자2', date: '2023-05-02', views: 31 },
+            { id: 3, title: '게시판 제목 예시 3', author: '작성자3', date: '2023-05-03', views: 28 },
+          ]
+        };
       } else if (component.type === COMPONENT_TYPES.DETAIL_PAGE) {
         defaultData = {
           title: '상품 상세 페이지',
