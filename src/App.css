@@ -349,103 +349,11 @@ body {
   background: #fff;
 }
 
-/* S3 업로드 관련 스타일 */
+/* S3 업로드 관련 스타일 삭제 */
 .build-actions {
   display: flex;
   gap: 10px;
   position: relative;
-}
-
-.s3-upload-button {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 8px 12px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.2s;
-}
-
-.s3-upload-button:hover {
-  background-color: #0069d9;
-}
-
-.s3-upload-button:disabled {
-  background-color: #6c757d;
-  cursor: not-allowed;
-}
-
-.s3-config-modal {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  width: 300px;
-  background-color: white;
-  border: 1px solid #dee2e6;
-  border-radius: 4px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  padding: 15px;
-  z-index: 1000;
-  margin-top: 5px;
-}
-
-.s3-config-modal h3 {
-  margin-top: 0;
-  margin-bottom: 15px;
-  font-size: 16px;
-  border-bottom: 1px solid #dee2e6;
-  padding-bottom: 8px;
-}
-
-.form-group {
-  margin-bottom: 12px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.form-group input {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-  font-size: 14px;
-}
-
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 15px;
-}
-
-.form-actions button {
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.form-actions button[type="button"] {
-  background-color: #f8f9fa;
-  border: 1px solid #ced4da;
-  color: #212529;
-}
-
-.form-actions button[type="submit"] {
-  background-color: #28a745;
-  border: 1px solid #28a745;
-  color: white;
-}
-
-.form-actions button:disabled {
-  opacity: 0.65;
-  cursor: not-allowed;
 }
 
 /* 프로젝트 가져오기/내보내기 스타일 */

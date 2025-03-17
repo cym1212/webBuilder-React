@@ -449,7 +449,7 @@ function PropertyPanel() {
               />
             </div>
             
-            <h4>게시글 목록</h4>
+            {/* <h4>게시글 목록</h4>
             {boardData.map((item, index) => (
               <div key={index} className="property-subgroup">
                 <h5>게시글 {index + 1}</h5>
@@ -498,7 +498,7 @@ function PropertyPanel() {
               onClick={handleAddBoardItem}
             >
               게시글 추가
-            </button>
+            </button> */}
           </>
         );
         
