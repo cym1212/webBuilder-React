@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
 import { COMPONENT_TYPES } from '../constants';
 import LoginForm from "./LoginForm";
@@ -75,47 +75,131 @@ const DropZone = ({ components, setComponents }) => {
   );
 };
 
+// 추가된 탭 컴포넌트
+const NavButtons = ({ activeTab, setActiveTab }) => {
+  return (
+    <div className="nav-buttons">
+      <button 
+        className={activeTab === 1 ? "nav-button active" : "nav-button"} 
+        onClick={() => setActiveTab(1)}
+      >
+        1
+      </button>
+      <button 
+        className={activeTab === 2 ? "nav-button active" : "nav-button"} 
+        onClick={() => setActiveTab(2)}
+      >
+        2
+      </button>
+      <button 
+        className={activeTab === 3 ? "nav-button active" : "nav-button"} 
+        onClick={() => setActiveTab(3)}
+      >
+        3
+      </button>
+    </div>
+  );
+};
+
 function ComponentLibrary() {
+  const [activeTab, setActiveTab] = useState(1);
+
+  // 탭 1에 표시할 기본 컴포넌트
+  const renderComponentsTab1 = () => (
+    <div className="components-list">
+      <DraggableComponent 
+        type={COMPONENT_TYPES.TEXT} 
+        name="텍스트" 
+        icon="T" 
+      />
+      <DraggableComponent 
+        type={COMPONENT_TYPES.IMAGE} 
+        name="이미지" 
+        icon="🖼️" 
+      />
+      <DraggableComponent 
+        type={COMPONENT_TYPES.CONTAINER} 
+        name="영역" 
+        icon="⬚" 
+      />
+      <DraggableComponent 
+        type={COMPONENT_TYPES.BUTTON} 
+        name="버튼" 
+        icon="⏺" 
+      />
+      <DraggableComponent 
+        type={COMPONENT_TYPES.LOGIN} 
+        name="로그인" 
+        icon="🔑" 
+      /> 
+      <DraggableComponent 
+        type={COMPONENT_TYPES.BOARD} 
+        name="게시판" 
+        icon="📋" 
+      />
+      <DraggableComponent 
+        type={COMPONENT_TYPES.DETAIL_PAGE} 
+        name="상세 페이지" 
+        icon="📄" 
+      />
+    </div>
+  );
+
+  // 탭 2에 표시할 컴포넌트 (예시)
+  const renderComponentsTab2 = () => (
+    <div className="components-list">
+      {/* <DraggableComponent 
+        type={COMPONENT_TYPES.TEXT} 
+        name="테마 텍스트" 
+        icon="T" 
+      />
+      <DraggableComponent 
+        type={COMPONENT_TYPES.CONTAINER} 
+        name="테마 영역" 
+        icon="⬚" 
+      />
+      <DraggableComponent 
+        type={COMPONENT_TYPES.BUTTON} 
+        name="테마 버튼" 
+        icon="⏺" 
+      /> */}
+    </div>
+  );
+
+  // 탭 3에 표시할 컴포넌트 (예시)
+  const renderComponentsTab3 = () => (
+    <div className="components-list">
+      {/* <DraggableComponent 
+        type={COMPONENT_TYPES.BOARD} 
+        name="고급 게시판" 
+        icon="📋" 
+      />
+      <DraggableComponent 
+        type={COMPONENT_TYPES.DETAIL_PAGE} 
+        name="고급 상세 페이지" 
+        icon="📄" 
+      /> */}
+    </div>
+  );
+
+  const renderActiveTabContent = () => {
+    switch(activeTab) {
+      case 1:
+        return renderComponentsTab1();
+      case 2:
+        return renderComponentsTab2();
+      case 3:
+        return renderComponentsTab3();
+      default:
+        return renderComponentsTab1();
+    }
+  };
+
   return (
     <div className="component-library">
+      <NavButtons activeTab={activeTab} setActiveTab={setActiveTab} />
       <h3>구성 요소</h3>
-      <div className="components-list">
-        <DraggableComponent 
-          type={COMPONENT_TYPES.TEXT} 
-          name="텍스트" 
-          icon="T" 
-        />
-        <DraggableComponent 
-          type={COMPONENT_TYPES.IMAGE} 
-          name="이미지" 
-          icon="🖼️" 
-        />
-        <DraggableComponent 
-          type={COMPONENT_TYPES.CONTAINER} 
-          name="영역" 
-          icon="⬚" 
-        />
-        <DraggableComponent 
-          type={COMPONENT_TYPES.BUTTON} 
-          name="버튼" 
-          icon="⏺" 
-        />
-        <DraggableComponent 
-          type={COMPONENT_TYPES.LOGIN} 
-          name="로그인" 
-          icon="🔑" 
-        /> 
-        <DraggableComponent 
-          type={COMPONENT_TYPES.BOARD} 
-          name="게시판" 
-          icon="📋" 
-        />
-        <DraggableComponent 
-          type={COMPONENT_TYPES.DETAIL_PAGE} 
-          name="상세 페이지" 
-          icon="📄" 
-        />
-      </div>
+      {renderActiveTabContent()}
     </div>
   );
 }

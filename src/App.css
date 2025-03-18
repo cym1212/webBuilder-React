@@ -45,6 +45,49 @@ body {
   overflow-y: auto;
 }
 
+/* 네비게이션 버튼 스타일 */
+.nav-buttons {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.nav-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid #dee2e6;
+  background-color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  font-weight: bold;
+  font-size: 16px;
+  color: #6c757d;
+}
+
+.nav-button:hover {
+  background-color: #f8f9fa;
+  transform: translateY(-2px);
+  box-shadow: 0 3px 5px rgba(0,0,0,0.1);
+}
+
+.nav-button.active {
+  background-color: #e9ecef;
+  border-color: #adb5bd;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.nav-icon {
+  font-size: 16px;
+  color: #6c757d;
+  font-weight: bold;
+}
+
 .components-list {
   display: flex;
   flex-direction: column;
