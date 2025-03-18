@@ -575,17 +575,6 @@ function PropertyPanel() {
               </small>
             </div>
             <div className="property-group">
-              <label>API URL</label>
-              <input 
-                type="text" 
-                value={selectedComponent.data?.apiUrl || 'https://api.example.com/products'} 
-                onChange={(e) => handleDataChange('apiUrl', e.target.value)}
-              />
-              <small style={{ color: '#6c757d', marginTop: '5px', display: 'block' }}>
-                상품 정보를 가져올 API 엔드포인트 (상품 ID가 자동으로 추가됨)
-              </small>
-            </div>
-            <div className="property-group">
               <label>버튼 색상</label>
               <SketchPicker 
                 color={selectedComponent.style.buttonColor || '#4a90e2'} 
