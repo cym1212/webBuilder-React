@@ -390,6 +390,17 @@ function PropertyPanel() {
               />
             </div>
             <div className="property-group">
+              <label>API URL</label>
+              <input 
+                type="text" 
+                value={selectedComponent.data?.apiUrl || 'https://api.example.com/login'} 
+                onChange={(e) => handleDataChange('apiUrl', e.target.value)}
+              />
+              <small style={{ color: '#6c757d', marginTop: '5px', display: 'block' }}>
+                로그인 요청을 보낼 API 엔드포인트
+              </small>
+            </div>
+            <div className="property-group">
               <label>버튼 색상</label>
               <SketchPicker 
                 color={selectedComponent.style.buttonColor || '#4a90e2'} 
@@ -408,6 +419,10 @@ function PropertyPanel() {
         const boardTitle = Array.isArray(selectedComponent.data)
           ? (selectedComponent.data.title || '게시판')
           : (selectedComponent.data?.title || '게시판');
+        
+        const boardParameter = Array.isArray(selectedComponent.data)
+          ? (selectedComponent.data.parameter || '')
+          : (selectedComponent.data?.parameter || '');
         
         return (
           <>
@@ -438,7 +453,8 @@ function PropertyPanel() {
                       changes: {
                         data: {
                           title: e.target.value,
-                          items: boardData
+                          items: boardData,
+                          parameter: boardParameter
                         }
                       }
                     }));
@@ -447,6 +463,33 @@ function PropertyPanel() {
                   }
                 }}
               />
+            </div>
+            
+            <div className="property-group">
+              <label>파라미터</label>
+              <input 
+                type="text" 
+                value={boardParameter} 
+                onChange={(e) => {
+                  if (Array.isArray(selectedComponent.data)) {
+                    dispatch(updateComponent({
+                      id: selectedComponent.id,
+                      changes: {
+                        data: {
+                          title: boardTitle,
+                          items: boardData,
+                          parameter: e.target.value
+                        }
+                      }
+                    }));
+                  } else {
+                    handleDataChange('parameter', e.target.value);
+                  }
+                }}
+              />
+              <small style={{ display: 'block', marginTop: '5px', color: '#666' }}>
+                파라미터 값에 따라 다른 API 엔드포인트에서 데이터를 가져옵니다.
+              </small>
             </div>
             
             {/* <h4>게시글 목록</h4>
@@ -520,73 +563,35 @@ function PropertyPanel() {
                 onChange={(e) => handleStyleChange('borderRadius', `${e.target.value}px`)}
               />
             </div>
-            
-            <h4>상품 정보</h4>
             <div className="property-group">
-              <label>상품명</label>
+              <label>상품 ID</label>
               <input 
                 type="text" 
-                value={selectedComponent.data?.title || '상품 상세 페이지'} 
-                onChange={(e) => handleDataChange('title', e.target.value)}
+                value={selectedComponent.data?.productId || '1'} 
+                onChange={(e) => handleDataChange('productId', e.target.value)}
               />
+              <small style={{ color: '#6c757d', marginTop: '5px', display: 'block' }}>
+                상세 정보를 가져올 상품 ID
+              </small>
             </div>
             <div className="property-group">
-              <label>이미지 URL</label>
+              <label>API URL</label>
               <input 
                 type="text" 
-                value={selectedComponent.data?.image || ''} 
-                onChange={(e) => handleDataChange('image', e.target.value)}
+                value={selectedComponent.data?.apiUrl || 'https://api.example.com/products'} 
+                onChange={(e) => handleDataChange('apiUrl', e.target.value)}
               />
+              <small style={{ color: '#6c757d', marginTop: '5px', display: 'block' }}>
+                상품 정보를 가져올 API 엔드포인트 (상품 ID가 자동으로 추가됨)
+              </small>
             </div>
             <div className="property-group">
-              <label>가격</label>
-              <input 
-                type="text" 
-                value={selectedComponent.data?.price || ''} 
-                onChange={(e) => handleDataChange('price', e.target.value)}
+              <label>버튼 색상</label>
+              <SketchPicker 
+                color={selectedComponent.style.buttonColor || '#4a90e2'} 
+                onChange={(color) => handleStyleChange('buttonColor', color.hex)}
               />
             </div>
-            <div className="property-group">
-              <label>상품 설명</label>
-              <textarea 
-                value={selectedComponent.data?.description || ''} 
-                onChange={(e) => handleDataChange('description', e.target.value)}
-              />
-            </div>
-            
-            <h4>상품 스펙</h4>
-            {selectedComponent.data?.specs && selectedComponent.data.specs.map((spec, index) => (
-              <div key={index} className="property-subgroup">
-                <div className="property-field">
-                  <label>항목명</label>
-                  <input 
-                    type="text" 
-                    value={spec.label} 
-                    onChange={(e) => handleSpecChange(index, 'label', e.target.value)}
-                  />
-                </div>
-                <div className="property-field">
-                  <label>값</label>
-                  <input 
-                    type="text" 
-                    value={spec.value} 
-                    onChange={(e) => handleSpecChange(index, 'value', e.target.value)}
-                  />
-                </div>
-                <button 
-                  className="remove-button" 
-                  onClick={() => handleRemoveSpec(index)}
-                >
-                  항목 삭제
-                </button>
-              </div>
-            ))}
-            <button 
-              className="add-button" 
-              onClick={handleAddSpec}
-            >
-              스펙 항목 추가
-            </button>
           </>
         );
         

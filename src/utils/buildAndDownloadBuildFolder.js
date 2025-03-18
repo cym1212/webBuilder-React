@@ -348,6 +348,38 @@ body {
   color: #333;
 }
 
+.board-loading {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+}
+
+.board-loading:after {
+  content: '';
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  margin-left: 10px;
+  border: 2px solid #ddd;
+  border-radius: 50%;
+  border-top-color: #4a90e2;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.board-error {
+  padding: 20px;
+  text-align: center;
+  color: #e74c3c;
+  background-color: #fdf3f2;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
 .board-table {
   width: 100%;
   border-collapse: collapse;
@@ -540,31 +572,114 @@ const generateMainJS = (components) => {
       case 'LOGIN':
         const loginTitle = component.data?.title || '로그인';
         const loginButtonColor = component.style?.buttonColor || '#4a90e2';
+        const loginApiUrl = component.data?.apiUrl || 'https://api.example.com/login';
         
         componentsJS += `
   ${componentVar}.className = 'login-component';
   ${componentVar}.innerHTML = \`
     <div class="login-form">
       <h3>${loginTitle}</h3>
-      <form>
+      <form id="login-form-${index}">
         <div class="form-group">
-          <label for="username">아이디</label>
-          <input type="text" id="username" placeholder="아이디를 입력하세요" />
+          <label for="username-${index}">아이디</label>
+          <input type="text" id="username-${index}" placeholder="아이디를 입력하세요" />
         </div>
         <div class="form-group">
-          <label for="password">비밀번호</label>
-          <input type="password" id="password" placeholder="비밀번호를 입력하세요" />
+          <label for="password-${index}">비밀번호</label>
+          <input type="password" id="password-${index}" placeholder="비밀번호를 입력하세요" />
         </div>
-        <button type="button" class="login-button" style="background-color: ${loginButtonColor}">로그인</button>
+        <div class="login-message" style="display: none; margin: 10px 0; padding: 10px; border-radius: 4px;"></div>
+        <button type="submit" class="login-button" style="background-color: ${loginButtonColor}">로그인</button>
       </form>
     </div>
   \`;
+  
+  // 로그인 폼 이벤트 리스너 추가
+  setTimeout(() => {
+    const loginForm = document.getElementById('login-form-${index}');
+    const usernameInput = document.getElementById('username-${index}');
+    const passwordInput = document.getElementById('password-${index}');
+    const messageDiv = ${componentVar}.querySelector('.login-message');
+    
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const username = usernameInput.value.trim();
+      const password = passwordInput.value.trim();
+      
+      // 입력 검증
+      if (!username || !password) {
+        messageDiv.style.display = 'block';
+        messageDiv.style.backgroundColor = '#fdf3f2';
+        messageDiv.style.color = '#e74c3c';
+        messageDiv.textContent = '아이디와 비밀번호를 모두 입력해주세요.';
+        return;
+      }
+      
+      // 로그인 버튼 비활성화 및 로딩 표시
+      const loginButton = loginForm.querySelector('.login-button');
+      const originalText = loginButton.textContent;
+      loginButton.disabled = true;
+      loginButton.textContent = '로그인 중...';
+      
+      try {
+        // 실제 환경에서는 아래 주석 해제하여 사용
+        const response = await fetch('${loginApiUrl}', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ username, password })
+        });
+        
+        if (!response.ok) {
+          throw new Error('로그인 실패');
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          // 로그인 성공
+          messageDiv.style.display = 'block';
+          messageDiv.style.backgroundColor = '#e8f5e9';
+          messageDiv.style.color = '#388e3c';
+          messageDiv.textContent = '로그인 성공! 환영합니다.';
+          
+          // 세션 스토리지에 로그인 정보 저장
+          sessionStorage.setItem('isLoggedIn', 'true');
+          sessionStorage.setItem('username', username);
+          
+          // 3초 후 메시지 숨기기
+          setTimeout(() => {
+            messageDiv.style.display = 'none';
+          }, 3000);
+        } else {
+          // 로그인 실패
+          messageDiv.style.display = 'block';
+          messageDiv.style.backgroundColor = '#fdf3f2';
+          messageDiv.style.color = '#e74c3c';
+          messageDiv.textContent = '아이디 또는 비밀번호가 올바르지 않습니다.';
+        }
+      } catch (error) {
+        console.error('로그인 오류:', error);
+        messageDiv.style.display = 'block';
+        messageDiv.style.backgroundColor = '#fdf3f2';
+        messageDiv.style.color = '#e74c3c';
+        messageDiv.textContent = '로그인 처리 중 오류가 발생했습니다. 다시 시도해주세요.';
+      } finally {
+        // 로그인 버튼 다시 활성화
+        loginButton.disabled = false;
+        loginButton.textContent = originalText;
+      }
+    });
+  }, 500);
         `;
         break;
       case 'BOARD':
         // 게시판 데이터 처리
         let boardItems = [];
         let boardTitle = '게시판';
+        let boardParameter = '';
         
         // 데이터 구조에 따라 다르게 처리
         if (Array.isArray(component.data)) {
@@ -572,7 +687,13 @@ const generateMainJS = (components) => {
         } else if (component.data) {
           boardItems = component.data.items || [];
           boardTitle = component.data.title || '게시판';
+          boardParameter = component.data.parameter || '';
+          console.log('게시판 데이터:', component.data); // 디버깅용
         }
+        
+        // 보드 컴포넌트 HTML 생성 - 변수 값 확인을 위한 로그 추가
+        console.log('사용되는 제목:', boardTitle);
+        console.log('사용되는 파라미터:', boardParameter);
         
         let boardRows = '';
         
@@ -590,9 +711,18 @@ const generateMainJS = (components) => {
         
         componentsJS += `
   ${componentVar}.className = 'board-component';
+  ${componentVar}.setAttribute('data-parameter', '${boardParameter}');
+  
+  // 게시판 HTML 구조 생성
   ${componentVar}.innerHTML = \`
     <div class="board-container">
       <h3>${boardTitle}</h3>
+      <div class="board-loading" style="display: none; text-align: center; padding: 20px;">
+        <p>데이터를 불러오는 중...</p>
+      </div>
+      <div class="board-error" style="display: none; text-align: center; padding: 20px; color: #e74c3c;">
+        <p>데이터를 불러오는 중 오류가 발생했습니다.</p>
+      </div>
       <table class="board-table">
         <thead>
           <tr>
@@ -609,57 +739,231 @@ const generateMainJS = (components) => {
       </table>
     </div>
   \`;
+  
+  // 파라미터가 있는 경우 API에서 데이터 가져오기
+  if ('${boardParameter}') {
+    // 게시판 데이터 로드 함수
+    const loadBoardData = async (boardElement) => {
+      const parameter = boardElement.getAttribute('data-parameter');
+      const boardContainer = boardElement.querySelector('.board-container');
+      const loadingElement = boardElement.querySelector('.board-loading');
+      const errorElement = boardElement.querySelector('.board-error');
+      const tableElement = boardElement.querySelector('.board-table');
+      
+      // 로딩 표시
+      loadingElement.style.display = 'block';
+      tableElement.style.display = 'none';
+      errorElement.style.display = 'none';
+      
+      try {
+        // 파라미터 값에 따라 다른 API 엔드포인트 사용
+        let apiUrl = '';
+        
+        switch(parameter) {
+          case 'board1':
+            apiUrl = 'http://49.247.174.32:8080/first-board';
+            break;
+          case 'board2':
+            apiUrl = 'http://49.247.174.32:8080/second-board';
+            break;
+          case 'board3':
+            apiUrl = 'http://49.247.174.32:8080/third-board';
+            break;
+          case 'board4':
+            apiUrl = 'http://49.247.174.32:8080/gallery-board';
+            break;
+          default:
+            // 기본 API 엔드포인트
+            apiUrl = 'https://api.example.com/boards/default';
+        }
+        
+        // API 호출 (fetch 사용)
+        const fetchBoardData = async () => {
+          try {
+            // 실제 API 호출로 데이터 가져오기
+            const response = await fetch(apiUrl);
+            if (!response.ok) throw new Error('API 응답 오류');
+            const responseData = await response.json();
+            const data = responseData.content || [];
+            
+            // 예시 데이터 (API 호출이 실패할 경우 사용할 수 있음)
+            /* 
+            const data = [
+              { id: 1, title: '파라미터 ' + parameter + ' - 게시글 1', author: '작성자1', date: '2023-06-01', views: 42 },
+              { id: 2, title: '파라미터 ' + parameter + ' - 게시글 2', author: '작성자2', date: '2023-06-02', views: 31 },
+              { id: 3, title: '파라미터 ' + parameter + ' - 게시글 3', author: '작성자3', date: '2023-06-03', views: 28 },
+              { id: 4, title: '파라미터 ' + parameter + ' - 게시글 4', author: '작성자4', date: '2023-06-04', views: 15 },
+              { id: 5, title: '파라미터 ' + parameter + ' - 게시글 5', author: '작성자5', date: '2023-06-05', views: 22 }
+            ];
+            */
+            
+            // 테이블 내용 업데이트
+            const tbody = tableElement.querySelector('tbody');
+            tbody.innerHTML = '';
+            
+            data.forEach(post => {
+              const row = document.createElement('tr');
+              row.innerHTML = \`
+                <td>\${post.id}</td>
+                <td>\${post.title}</td>
+                <td>\${post.name || post.author || ''}</td>
+                <td>\${post.createdAt ? new Date(post.createdAt).toLocaleDateString() : (post.date || '')}</td>
+                <td>\${post.viewCount || post.views || 0}</td>
+              \`;
+              tbody.appendChild(row);
+            });
+            
+            // 로딩 숨기고 테이블 표시
+            loadingElement.style.display = 'none';
+            tableElement.style.display = 'table';
+          } catch (error) {
+            console.error('API 호출 오류:', error);
+            loadingElement.style.display = 'none';
+            errorElement.style.display = 'block';
+          }
+        };
+        
+        // API 호출 실행 (1초 지연 시뮬레이션)
+        setTimeout(fetchBoardData, 1000);
+      } catch (error) {
+        console.error('게시판 데이터 로드 실패:', error);
+        loadingElement.style.display = 'none';
+        errorElement.style.display = 'block';
+      }
+    };
+    
+    // DOMContentLoaded 이벤트에서 데이터 로드 함수 호출
+    setTimeout(() => {
+      loadBoardData(${componentVar});
+    }, 500);
+  }
         `;
         break;
       case 'DETAIL_PAGE':
         const productData = component.data || {};
-        let specsRows = '';
-        
-        if (productData.specs && Array.isArray(productData.specs)) {
-          productData.specs.forEach(spec => {
-            specsRows += `
-              <tr>
-                <th>${spec.label}</th>
-                <td>${spec.value}</td>
-              </tr>
-            `;
-          });
-        }
+        const productId = productData.productId || '1';
+        const detailApiUrl = productData.apiUrl || 'https://api.example.com/products';
         
         componentsJS += `
   ${componentVar}.className = 'detail-page-component';
+  ${componentVar}.setAttribute('data-product-id', '${productId}');
+  
+  // 상세 페이지 기본 구조
   ${componentVar}.innerHTML = \`
     <div class="detail-container">
-      <h2>${productData.title || '상품 상세 페이지'}</h2>
-      <div class="product-container">
-        <div class="product-image">
-          <img src="${productData.image || ''}" alt="${productData.title || '상품'}" />
-        </div>
-        <div class="product-info">
-          <div class="product-price">
-            <h3>가격</h3>
-            <p>${productData.price || ''}</p>
+      <div class="detail-loading" style="display: block; text-align: center; padding: 40px;">
+        <p>상품 정보를 불러오는 중...</p>
+      </div>
+      <div class="detail-error" style="display: none; text-align: center; padding: 40px; color: #e74c3c;">
+        <p>상품 정보를 불러오는 중 오류가 발생했습니다.</p>
+        <button class="retry-button" style="padding: 8px 16px; background-color: #4a90e2; color: white; border: none; border-radius: 4px; margin-top: 10px;">다시 시도</button>
+      </div>
+      <div class="product-content" style="display: none;">
+        <h2 class="product-title">상품 상세 페이지</h2>
+        <div class="product-container">
+          <div class="product-image">
+            <img src="" alt="상품 이미지" />
           </div>
-          <div class="product-description">
-            <h3>제품 설명</h3>
-            <p>${productData.description || ''}</p>
-          </div>
-          <div class="product-specs">
-            <h3>제품 스펙</h3>
-            <table>
-              <tbody>
-                ${specsRows}
-              </tbody>
-            </table>
-          </div>
-          <div class="product-actions">
-            <button class="cart-button">장바구니 담기</button>
-            <button class="buy-button">바로 구매하기</button>
+          <div class="product-info">
+            <div class="product-price">
+              <h3>가격</h3>
+              <p class="price-value"></p>
+            </div>
+            <div class="product-description">
+              <h3>제품 설명</h3>
+              <p class="description-text"></p>
+            </div>
+            <div class="product-specs">
+              <h3>제품 스펙</h3>
+              <table>
+                <tbody class="specs-table-body">
+                </tbody>
+              </table>
+            </div>
+            <div class="product-actions">
+              <button class="cart-button">장바구니 담기</button>
+              <button class="buy-button">바로 구매하기</button>
+            </div>
           </div>
         </div>
       </div>
     </div>
   \`;
+  
+  // 상품 데이터 로드 함수
+  setTimeout(() => {
+    const loadProductData = async () => {
+      const productId = ${componentVar}.getAttribute('data-product-id');
+      const detailContainer = ${componentVar}.querySelector('.detail-container');
+      const loadingElement = ${componentVar}.querySelector('.detail-loading');
+      const errorElement = ${componentVar}.querySelector('.detail-error');
+      const productContent = ${componentVar}.querySelector('.product-content');
+      
+      try {
+        // 실제 환경에서는 아래 주석 해제하여 사용
+        const response = await fetch(\`${detailApiUrl}/\${productId}\`);
+        if (!response.ok) throw new Error('API 응답 오류');
+        const data = await response.json();
+        
+        // 데이터 표시
+        const titleElement = ${componentVar}.querySelector('.product-title');
+        const imageElement = ${componentVar}.querySelector('.product-image img');
+        const priceElement = ${componentVar}.querySelector('.price-value');
+        const descriptionElement = ${componentVar}.querySelector('.description-text');
+        const specsTableBody = ${componentVar}.querySelector('.specs-table-body');
+        
+        titleElement.textContent = data.title;
+        imageElement.src = data.image;
+        imageElement.alt = data.title;
+        priceElement.textContent = data.price;
+        descriptionElement.textContent = data.description;
+        
+        // 스펙 테이블 생성
+        specsTableBody.innerHTML = '';
+        if (data.specs && Array.isArray(data.specs)) {
+          data.specs.forEach(spec => {
+            const row = document.createElement('tr');
+            row.innerHTML = \`
+              <th>\${spec.label}</th>
+              <td>\${spec.value}</td>
+            \`;
+            specsTableBody.appendChild(row);
+          });
+        }
+        
+        // 버튼 이벤트 리스너 추가
+        const cartButton = ${componentVar}.querySelector('.cart-button');
+        const buyButton = ${componentVar}.querySelector('.buy-button');
+        
+        cartButton.addEventListener('click', () => {
+          alert('장바구니에 추가되었습니다: ' + data.title);
+        });
+        
+        buyButton.addEventListener('click', () => {
+          alert('구매 페이지로 이동합니다: ' + data.title);
+        });
+        
+        // 로딩 숨기고 콘텐츠 표시
+        loadingElement.style.display = 'none';
+        productContent.style.display = 'block';
+      } catch (error) {
+        console.error('상품 데이터 로드 실패:', error);
+        loadingElement.style.display = 'none';
+        errorElement.style.display = 'block';
+        
+        // 재시도 버튼 이벤트 리스너
+        const retryButton = errorElement.querySelector('.retry-button');
+        retryButton.addEventListener('click', () => {
+          errorElement.style.display = 'none';
+          loadingElement.style.display = 'block';
+          loadProductData();
+        });
+      }
+    };
+    
+    // 상품 데이터 로드 실행
+    loadProductData();
+  }, 500);
         `;
         break;
       default:

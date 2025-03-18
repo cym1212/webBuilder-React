@@ -20,6 +20,73 @@ const defaultComponentSizes = {
   [COMPONENT_TYPES.DETAIL_PAGE]: { width: 1800, height: 1600 },
 };
 
+// 컴포넌트 타입별 기본 데이터 구조
+const defaultComponentData = {
+  [COMPONENT_TYPES.TEXT]: '',
+  [COMPONENT_TYPES.IMAGE]: { src: 'https://via.placeholder.com/150', alt: '이미지' },
+  [COMPONENT_TYPES.CONTAINER]: '',
+  [COMPONENT_TYPES.BUTTON]: '버튼',
+  [COMPONENT_TYPES.LOGIN]: { 
+    title: '로그인', 
+    apiUrl: 'https://api.example.com/login' 
+  },
+  [COMPONENT_TYPES.BOARD]: { 
+    title: '게시판', 
+    parameter: '1',
+    items: [] 
+  },
+  [COMPONENT_TYPES.DETAIL_PAGE]: { 
+    productId: '1',
+    apiUrl: 'https://api.example.com/products'
+  }
+};
+
+// 컴포넌트 타입별 기본 스타일
+const defaultComponentStyles = {
+  [COMPONENT_TYPES.TEXT]: { 
+    color: '#000000', 
+    fontSize: '16px', 
+    fontWeight: 'normal' 
+  },
+  [COMPONENT_TYPES.IMAGE]: { 
+    border: 'none', 
+    borderRadius: '0px' 
+  },
+  [COMPONENT_TYPES.CONTAINER]: { 
+    backgroundColor: '#f8f9fa', 
+    border: '1px solid #dee2e6', 
+    borderRadius: '4px' 
+  },
+  [COMPONENT_TYPES.BUTTON]: { 
+    backgroundColor: '#4a90e2', 
+    color: '#ffffff', 
+    border: 'none', 
+    borderRadius: '4px', 
+    padding: '8px 16px', 
+    fontSize: '14px' 
+  },
+  [COMPONENT_TYPES.LOGIN]: { 
+    backgroundColor: '#f8f9fa', 
+    borderRadius: '8px', 
+    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)', 
+    padding: '20px',
+    buttonColor: '#4a90e2'
+  },
+  [COMPONENT_TYPES.BOARD]: { 
+    backgroundColor: '#ffffff', 
+    borderRadius: '8px', 
+    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)', 
+    padding: '20px' 
+  },
+  [COMPONENT_TYPES.DETAIL_PAGE]: { 
+    backgroundColor: '#ffffff', 
+    borderRadius: '8px', 
+    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)', 
+    padding: '20px',
+    buttonColor: '#4a90e2'
+  }
+};
+
 export const editorSlice = createSlice({
   name: 'editor',
   initialState,
@@ -30,42 +97,24 @@ export const editorSlice = createSlice({
       // 컴포넌트 타입에 따른 기본 크기 설정
       const defaultSize = defaultComponentSizes[component.type] || { width: 200, height: 100 };
       
+      // 컴포넌트 타입에 따른 기본 스타일 설정
+      const componentStyle = { ...defaultComponentStyles[component.type], ...component.style };
+      
       // 기본 데이터 설정
-      let defaultData = {};
-      if (component.type === COMPONENT_TYPES.BOARD) {
-        defaultData = {
-          title: '게시판',
-          items: [
-            { id: 1, title: '게시판 제목 예시 1', author: '작성자1', date: '2023-05-01', views: 42 },
-            { id: 2, title: '게시판 제목 예시 2', author: '작성자2', date: '2023-05-02', views: 31 },
-            { id: 3, title: '게시판 제목 예시 3', author: '작성자3', date: '2023-05-03', views: 28 },
-          ]
-        };
-      } else if (component.type === COMPONENT_TYPES.DETAIL_PAGE) {
-        defaultData = {
-          title: '상품 상세 페이지',
-          image: 'https://via.placeholder.com/400x300',
-          price: '50,000원',
-          description: '이 제품은 고품질의 소재로 제작되었으며, 다양한 용도로 활용할 수 있습니다.',
-          specs: [
-            { label: '제조사', value: '샘플 제조사' },
-            { label: '원산지', value: '대한민국' },
-          ]
-        };
-      }
+      let defaultData = defaultComponentData[component.type] || {};
       
-      // 컴포넌트에 기본 속성 추가
-      const enhancedComponent = {
-        ...component,
-        position: component.position || { x: 50, y: 50 },
+      // 컴포넌트 추가
+      state.components.push({
+        id: component.id,
+        type: component.type,
+        position: component.position || { x: 0, y: 0 },
         size: component.size || defaultSize,
-        style: component.style || {},
-        data: component.data || defaultData,
-        isSelected: true
-      };
+        style: componentStyle,
+        content: component.content || '',
+        data: component.data || defaultData
+      });
       
-      state.components.push(enhancedComponent);
-      state.selectedComponentId = enhancedComponent.id;
+      state.selectedComponentId = component.id;
     },
     updateComponent: (state, action) => {
       const { id, changes } = action.payload;
