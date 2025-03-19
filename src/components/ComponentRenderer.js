@@ -26,13 +26,34 @@ function ComponentRenderer({ component }) {
   // 이 컴포넌트의 자식 컴포넌트들 찾기
   const childComponents = allComponents.filter(comp => comp.parentId === component.id);
   
+  // 부모 컴포넌트 찾기
+  const parentComponent = component.parentId ? allComponents.find(comp => comp.id === component.parentId) : null;
+  const isChildOfColumn = parentComponent?.type === COMPONENT_TYPES.COLUMN;
+  const isChildOfRow = parentComponent?.type === COMPONENT_TYPES.ROW;
+  
   const [{ isDragging }, drag] = useDrag(() => ({
     type: 'COMPONENT',
-    item: { id: component.id, type: component.type },
+    item: { 
+      id: component.id, 
+      type: component.type,
+      hasChildren: childComponents.length > 0  // 자식이 있는지 여부 전달
+    },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
-  }), [component.id, component.type]);
+    // 드래그 종료 시 호출되는 함수
+    end: (item, monitor) => {
+      // 드롭이 성공하지 않았다면 원래 위치로 복귀
+      if (!monitor.didDrop() && item.hasChildren) {
+        // 자식이 있는 컴포넌트가 사라지지 않도록 원래 위치 유지
+        dispatch(updateComponentPosition({ 
+          id: component.id, 
+          newPosition: component.position,
+          parentId: component.parentId
+        }));
+      }
+    }
+  }), [component.id, component.type, childComponents.length, component.position, component.parentId]);
 
   const [, drop] = useDrop(() => ({
     accept: 'COMPONENT',
@@ -66,6 +87,24 @@ function ComponentRenderer({ component }) {
   const handleSelect = (e) => {
     e.stopPropagation();
     dispatch(selectComponent(component.id));
+  };
+  
+  // 부모 컴포넌트의 너비와 높이 구하기
+  const getParentDimensions = () => {
+    if (!component.parentId) return null;
+    
+    const parentEl = document.getElementById(
+      parentComponent?.type === COMPONENT_TYPES.ROW 
+        ? `row-${component.parentId}`
+        : parentComponent?.type === COMPONENT_TYPES.COLUMN
+          ? `col-${component.parentId}`
+          : null
+    );
+    
+    if (!parentEl) return null;
+    
+    const rect = parentEl.getBoundingClientRect();
+    return { width: rect.width, height: rect.height };
   };
   
   // 리사이즈 시작 핸들러
@@ -138,6 +177,33 @@ function ComponentRenderer({ component }) {
     // 최소 크기 제한
     newWidth = Math.max(20, newWidth);
     newHeight = Math.max(20, newHeight);
+    
+    // 부모 컴포넌트 크기 제한 적용
+    if (component.parentId) {
+      const parentDimensions = getParentDimensions();
+      if (parentDimensions) {
+        // 부모 컴포넌트의 크기와 현재 컴포넌트의 위치를 고려하여 최대 크기 계산
+        const maxWidth = parentDimensions.width - newX;
+        const maxHeight = parentDimensions.height - newY;
+        
+        // 부모 컴포넌트 영역을 넘지 않도록 제한
+        if (newWidth > maxWidth) {
+          newWidth = maxWidth;
+          // 왼쪽으로 리사이즈할 때 위치 조정
+          if (resizeDirection.includes('w')) {
+            newX = component.position.x + (startSize.width - newWidth);
+          }
+        }
+        
+        if (newHeight > maxHeight) {
+          newHeight = maxHeight;
+          // 위로 리사이즈할 때 위치 조정
+          if (resizeDirection.includes('n')) {
+            newY = component.position.y + (startSize.height - newHeight);
+          }
+        }
+      }
+    }
     
     // 크기와 위치 업데이트
     dispatch(updateComponent({
@@ -215,34 +281,53 @@ function ComponentRenderer({ component }) {
   // 그리드 내부 자식 컴포넌트의 스타일 조정
   let componentStyle;
   
-  if (isGridComponent) {
-    // Row, Column 컴포넌트 스타일
+  if (isGridComponent && isChildOfGridComponent) {
+    // 다른 그리드 컴포넌트 내부에 있는 Row, Column - 자유 배치
     componentStyle = {
       cursor: resizing ? 'auto' : 'move',
       opacity: isDragging ? 0.5 : 1,
       border: component.isSelected ? '1px dashed #007bff' : '1px dashed #ccc',
       boxSizing: 'border-box',
-      margin: '5px',
-      position: isChildOfGridComponent ? 'relative' : 'absolute',
-      width: isChildOfGridComponent ? 'auto' : `${component.size.width}px`,
-      height: isChildOfGridComponent ? 'auto' : `${component.size.height}px`,
-      left: isChildOfGridComponent ? 'auto' : `${component.position.x}px`,
-      top: isChildOfGridComponent ? 'auto' : `${component.position.y}px`
-    };
-  } else if (isChildOfGridComponent) {
-    // 그리드 내부에 위치한 일반 컴포넌트 스타일
-    componentStyle = {
-      position: 'relative',
-      margin: '5px',
+      margin: '0',
+      position: 'absolute',
       width: `${component.size.width}px`,
       height: `${component.size.height}px`,
+      left: `${component.position.x}px`,
+      top: `${component.position.y}px`,
+      zIndex: component.isSelected ? 100 : 1
+    };
+  } else if (isGridComponent) {
+    // 최상위 그리드 컴포넌트 - 크기 조절 가능
+    componentStyle = {
       cursor: resizing ? 'auto' : 'move',
       opacity: isDragging ? 0.5 : 1,
       border: component.isSelected ? '1px dashed #007bff' : '1px dashed #ccc',
-      boxSizing: 'border-box'
+      boxSizing: 'border-box',
+      margin: '0',
+      position: 'absolute',
+      width: `${component.size.width}px`,
+      height: `${component.size.height}px`,
+      left: `${component.position.x}px`,
+      top: `${component.position.y}px`,
+      zIndex: component.isSelected ? 100 : 1
+    };
+  } else if (isChildOfGridComponent) {
+    // 그리드 내부의 일반 컴포넌트 - 자유 배치
+    componentStyle = {
+      position: 'absolute',
+      left: `${component.position.x}px`,
+      top: `${component.position.y}px`,
+      width: `${component.size.width}px`,
+      height: `${component.size.height}px`,
+      margin: '0',
+      cursor: resizing ? 'auto' : 'move',
+      opacity: isDragging ? 0.5 : 1,
+      border: component.isSelected ? '1px dashed #007bff' : '1px dashed #ccc',
+      boxSizing: 'border-box',
+      zIndex: component.isSelected ? 100 : 1
     };
   } else {
-    // 최상위 컴포넌트 스타일
+    // 최상위 컴포넌트 - 가로 세로 크기 조절 모두 가능
     componentStyle = {
       position: 'absolute',
       left: `${component.position.x}px`,
@@ -252,7 +337,8 @@ function ComponentRenderer({ component }) {
       cursor: resizing ? 'auto' : 'move',
       opacity: isDragging ? 0.5 : 1,
       border: component.isSelected ? '1px dashed #007bff' : '1px dashed #ccc',
-      boxSizing: 'border-box'
+      boxSizing: 'border-box',
+      zIndex: component.isSelected ? 100 : 1
     };
   }
   
@@ -268,19 +354,17 @@ function ComponentRenderer({ component }) {
     >
       {renderComponent()}
       
-      {/* 리사이즈 핸들 */}
-      {!isGridComponent && (
-        <>
-          <div className="resize-handle e" onMouseDown={(e) => handleResizeStart(e, 'e')}></div>
-          <div className="resize-handle w" onMouseDown={(e) => handleResizeStart(e, 'w')}></div>
-          <div className="resize-handle s" onMouseDown={(e) => handleResizeStart(e, 's')}></div>
-          <div className="resize-handle n" onMouseDown={(e) => handleResizeStart(e, 'n')}></div>
-          <div className="resize-handle se" onMouseDown={(e) => handleResizeStart(e, 'se')}></div>
-          <div className="resize-handle sw" onMouseDown={(e) => handleResizeStart(e, 'sw')}></div>
-          <div className="resize-handle ne" onMouseDown={(e) => handleResizeStart(e, 'ne')}></div>
-          <div className="resize-handle nw" onMouseDown={(e) => handleResizeStart(e, 'nw')}></div>
-        </>
-      )}
+      {/* 리사이즈 핸들 - 모든 컴포넌트에 제공 */}
+      <>
+        <div className="resize-handle e" onMouseDown={(e) => handleResizeStart(e, 'e')}></div>
+        <div className="resize-handle w" onMouseDown={(e) => handleResizeStart(e, 'w')}></div>
+        <div className="resize-handle s" onMouseDown={(e) => handleResizeStart(e, 's')}></div>
+        <div className="resize-handle n" onMouseDown={(e) => handleResizeStart(e, 'n')}></div>
+        <div className="resize-handle se" onMouseDown={(e) => handleResizeStart(e, 'se')}></div>
+        <div className="resize-handle sw" onMouseDown={(e) => handleResizeStart(e, 'sw')}></div>
+        <div className="resize-handle ne" onMouseDown={(e) => handleResizeStart(e, 'ne')}></div>
+        <div className="resize-handle nw" onMouseDown={(e) => handleResizeStart(e, 'nw')}></div>
+      </>
     </div>
   );
 }

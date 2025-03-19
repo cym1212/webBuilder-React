@@ -231,7 +231,7 @@ export const editorSlice = createSlice({
       localStorage.setItem('savedProjects', JSON.stringify(state.savedProjects));
     },
     updateComponentPosition: (state, action) => {
-      const { id, newPosition, parentId } = action.payload;
+      const { id, newPosition, parentId, size } = action.payload;
       const component = state.components.find(comp => comp.id === id);
       if (component) {
         component.position = newPosition;
@@ -239,6 +239,11 @@ export const editorSlice = createSlice({
         // parentId가 지정되었다면 업데이트 (부모 컴포넌트 변경)
         if (parentId !== undefined) {
           component.parentId = parentId;
+        }
+        
+        // size가 지정되었다면 컴포넌트 크기 업데이트
+        if (size) {
+          component.size = size;
         }
       }
     },
