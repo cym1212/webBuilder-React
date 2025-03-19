@@ -6,4 +6,6 @@ export const COMPONENT_TYPES = {
   LOGIN: "LOGIN",
   BOARD: "BOARD",
   DETAIL_PAGE: "DETAIL_PAGE",
+  ROW: "ROW",
+  COLUMN: "COLUMN",
 };

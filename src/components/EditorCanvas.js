@@ -11,6 +11,7 @@ import {
 } from '../redux/editorSlice';
 import ComponentRenderer from './ComponentRenderer';
 import { getLayoutComponentById } from '../layouts';
+import { COMPONENT_TYPES } from '../constants';
 
 function EditorCanvas() {
   const dispatch = useDispatch();
@@ -22,12 +23,15 @@ function EditorCanvas() {
   // 선택된 레이아웃 컴포넌트 가져오기
   const LayoutComponent = selectedLayout ? getLayoutComponentById(selectedLayout) : null;
 
+  // 최상위 컴포넌트만 필터링 (부모가 없는 컴포넌트)
+  const rootComponents = components.filter(comp => !comp.parentId);
+
   // 컴포넌트의 최대 Y 위치를 계산하여 메인 영역 높이 결정
   const calculateMainContentHeight = () => {
-    if (components.length === 0) return 300; // 기본 최소 높이
+    if (rootComponents.length === 0) return 300; // 기본 최소 높이
 
     let maxY = 0;
-    components.forEach(comp => {
+    rootComponents.forEach(comp => {
       const bottomY = comp.position.y + comp.size.height;
       if (bottomY > maxY) {
         maxY = bottomY;
@@ -45,6 +49,9 @@ function EditorCanvas() {
 
       const selectedComponent = components.find(comp => comp.id === selectedComponentId);
       if (!selectedComponent) return;
+
+      // 부모 컴포넌트가 있으면 키보드 조작 무시 (부모 내부에서의 위치는 별도 처리 필요)
+      if (selectedComponent.parentId) return;
 
       let { x, y } = selectedComponent.position;
       const step = 10;  // 이동 간격 (10px)
@@ -78,6 +85,11 @@ function EditorCanvas() {
   const [{ isOver }, drop] = useDrop(() => ({
     accept: 'COMPONENT',
     drop: (item, monitor) => {
+      // 이미 다른 곳에서 드롭된 경우 처리하지 않음
+      if (monitor.didDrop()) {
+        return;
+      }
+      
       const offset = monitor.getClientOffset();
       if (!offset) return; 
 
@@ -108,43 +120,60 @@ function EditorCanvas() {
         }
       }
 
-      // 컴포넌트 타입에 따른 기본 크기 설정
-      let defaultWidth = 150;
-      let defaultHeight = 50;
-      
-      if (item.type === 'LOGIN') {
-        defaultWidth = 300;
-        defaultHeight = 300;
-      }
-
+      // 이미 존재하는 컴포넌트의 경우 위치 업데이트 (부모에서 최상위로 이동)
       if (item.id) {
-        dispatch(updateComponentPosition({ id: item.id, newPosition: { x: x, y: y } }));
+        dispatch(updateComponentPosition({ 
+          id: item.id, 
+          newPosition: { x, y },
+          parentId: null  // 부모 제거 (최상위로 이동)
+        }));
       } else {
+        // 컴포넌트 타입에 따른 기본 크기 설정
+        let defaultWidth = 150;
+        let defaultHeight = 50;
+        
+        if (item.type === COMPONENT_TYPES.LOGIN) {
+          defaultWidth = 300;
+          defaultHeight = 300;
+        } else if (item.type === COMPONENT_TYPES.ROW) {
+          defaultWidth = 600;
+          defaultHeight = 100;
+        } else if (item.type === COMPONENT_TYPES.COLUMN) {
+          defaultWidth = 200;
+          defaultHeight = 200;
+        }
+
+        // 새 컴포넌트 추가
         dispatch(addComponent({
           id: uuidv4(),
           type: item.type,
-          position: { x: x, y: y },
+          position: { x, y },
           size: { width: defaultWidth, height: defaultHeight },
           style: {},
           content: getDefaultContent(item.type),
+          parentId: null // 최상위 컴포넌트
         }));
       }
     },
     collect: (monitor) => ({
-      isOver: !!monitor.isOver(),
+      isOver: !!monitor.isOver({ shallow: true }),
     }),
-  }));
+  }), []);
 
   const getDefaultContent = (type) => {
     switch(type) {
-      case 'TEXT':
+      case COMPONENT_TYPES.TEXT:
         return '텍스트를 입력하세요';
-      case 'IMAGE':
+      case COMPONENT_TYPES.IMAGE:
         return { src: 'https://via.placeholder.com/150', alt: '이미지' };
-      case 'BUTTON':
+      case COMPONENT_TYPES.BUTTON:
         return '버튼';
-      case 'LOGIN':
+      case COMPONENT_TYPES.LOGIN:
         return '로그인 폼';
+      case COMPONENT_TYPES.ROW:
+        return '';
+      case COMPONENT_TYPES.COLUMN:
+        return '';
       default:
         return '';
     }
@@ -179,7 +208,7 @@ function EditorCanvas() {
                 transition: 'background-color 0.3s, border 0.3s'
               }}
             >
-              {components.map(component => (
+              {rootComponents.map(component => (
                 <ComponentRenderer key={component.id} component={component} />
               ))}
             </div>
@@ -188,7 +217,7 @@ function EditorCanvas() {
       ) : (
         // 레이아웃이 없는 경우 기존 방식으로 컴포넌트 렌더링
         <>
-          {components.map(component => (
+          {rootComponents.map(component => (
             <ComponentRenderer key={component.id} component={component} />
           ))}
         </>

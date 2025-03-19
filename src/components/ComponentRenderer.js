@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useDrag, useDrop } from 'react-dnd';
-import { updateComponent, selectComponent, updateComponentPosition } from '../redux/editorSlice';
+import { updateComponent, selectComponent, updateComponentPosition, selectComponents } from '../redux/editorSlice';
 import TextComponent from './TextComponent';
 import ImageComponent from './ImageComponent';
 import ContainerComponent from './ContainerComponent';
@@ -9,28 +9,39 @@ import ButtonComponent from './ButtonComponent';
 import LoginForm from './LoginForm';
 import BoardComponent from './BoardComponent';
 import DetailPageComponent from './DetailPageComponent';
+import RowComponent from './RowComponent';
+import ColumnComponent from './ColumnComponent';
 import { COMPONENT_TYPES } from '../constants';
 import './ComponentRenderer.css';
 
 function ComponentRenderer({ component }) {
   const dispatch = useDispatch();
+  const allComponents = useSelector(selectComponents);
   const [resizing, setResizing] = useState(false);
   const [resizeDirection, setResizeDirection] = useState(null);
   const [startPos, setStartPos] = useState({ x: 0, y: 0 });
   const [startSize, setStartSize] = useState({ width: 0, height: 0 });
   const componentRef = useRef(null);
   
+  // 이 컴포넌트의 자식 컴포넌트들 찾기
+  const childComponents = allComponents.filter(comp => comp.parentId === component.id);
+  
   const [{ isDragging }, drag] = useDrag(() => ({
     type: 'COMPONENT',
-    item: { id: component.id },
+    item: { id: component.id, type: component.type },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
-  }));
+  }), [component.id, component.type]);
 
   const [, drop] = useDrop(() => ({
     accept: 'COMPONENT',
     drop: (item, monitor) => {
+      // Row나 Column 컴포넌트는 자체적으로 드롭 처리
+      if (component.type === COMPONENT_TYPES.ROW || component.type === COMPONENT_TYPES.COLUMN) {
+        return;
+      }
+      
       const offset = monitor.getClientOffset();
       if (!offset) return;
 
@@ -43,12 +54,17 @@ function ComponentRenderer({ component }) {
 
       // ✅ 기존 컴포넌트라면 위치 업데이트
       if (item.id === component.id) {
-        dispatch(updateComponentPosition({ id: component.id, newPosition: { x, y } }));
+        dispatch(updateComponentPosition({ 
+          id: component.id, 
+          newPosition: { x, y },
+          parentId: null // 최상위로 이동
+        }));
       }
     },
-  }));
+  }), [component.id, component.type]);
   
-  const handleSelect = () => {
+  const handleSelect = (e) => {
+    e.stopPropagation();
     dispatch(selectComponent(component.id));
   };
   
@@ -57,7 +73,7 @@ function ComponentRenderer({ component }) {
     e.stopPropagation();
     e.preventDefault();
     
-    handleSelect(); // 컴포넌트 선택
+    handleSelect(e); // 컴포넌트 선택
     setResizing(true);
     setResizeDirection(direction);
     setStartPos({ x: e.clientX, y: e.clientY });
@@ -167,10 +183,78 @@ function ComponentRenderer({ component }) {
         return <BoardComponent style={component.style} data={component.data} />;
       case COMPONENT_TYPES.DETAIL_PAGE:
         return <DetailPageComponent style={component.style} data={component.data} />;
+      case COMPONENT_TYPES.ROW:
+        return (
+          <RowComponent 
+            content={component.content} 
+            style={component.style} 
+            data={component.data} 
+            id={component.id}
+            components={allComponents}
+          />
+        );
+      case COMPONENT_TYPES.COLUMN:
+        return (
+          <ColumnComponent 
+            content={component.content} 
+            style={component.style} 
+            data={component.data} 
+            id={component.id}
+            components={allComponents}
+          />
+        );
       default:
         return null;
     }
   };
+  
+  // Row나 Column이 다른 Row나 Column의 하위에 있을 때 포지션을 absolute로 설정하지 않도록 처리
+  const isGridComponent = component.type === COMPONENT_TYPES.ROW || component.type === COMPONENT_TYPES.COLUMN;
+  const isChildOfGridComponent = component.parentId !== undefined && component.parentId !== null;
+  
+  // 그리드 내부 자식 컴포넌트의 스타일 조정
+  let componentStyle;
+  
+  if (isGridComponent) {
+    // Row, Column 컴포넌트 스타일
+    componentStyle = {
+      cursor: resizing ? 'auto' : 'move',
+      opacity: isDragging ? 0.5 : 1,
+      border: component.isSelected ? '1px dashed #007bff' : '1px dashed #ccc',
+      boxSizing: 'border-box',
+      margin: '5px',
+      position: isChildOfGridComponent ? 'relative' : 'absolute',
+      width: isChildOfGridComponent ? 'auto' : `${component.size.width}px`,
+      height: isChildOfGridComponent ? 'auto' : `${component.size.height}px`,
+      left: isChildOfGridComponent ? 'auto' : `${component.position.x}px`,
+      top: isChildOfGridComponent ? 'auto' : `${component.position.y}px`
+    };
+  } else if (isChildOfGridComponent) {
+    // 그리드 내부에 위치한 일반 컴포넌트 스타일
+    componentStyle = {
+      position: 'relative',
+      margin: '5px',
+      width: `${component.size.width}px`,
+      height: `${component.size.height}px`,
+      cursor: resizing ? 'auto' : 'move',
+      opacity: isDragging ? 0.5 : 1,
+      border: component.isSelected ? '1px dashed #007bff' : '1px dashed #ccc',
+      boxSizing: 'border-box'
+    };
+  } else {
+    // 최상위 컴포넌트 스타일
+    componentStyle = {
+      position: 'absolute',
+      left: `${component.position.x}px`,
+      top: `${component.position.y}px`,
+      width: `${component.size.width}px`,
+      height: `${component.size.height}px`,
+      cursor: resizing ? 'auto' : 'move',
+      opacity: isDragging ? 0.5 : 1,
+      border: component.isSelected ? '1px dashed #007bff' : '1px dashed #ccc',
+      boxSizing: 'border-box'
+    };
+  }
   
   return (
     <div
@@ -178,31 +262,25 @@ function ComponentRenderer({ component }) {
         componentRef.current = node;
         drag(drop(node));
       }}
-      className={`placed-component ${isDragging ? 'dragging' : ''} ${component.isSelected ? 'selected-component' : ''}`}
-      style={{
-        position: 'absolute',
-        left: `${component.position.x}px`,
-        top: `${component.position.y}px`,
-        width: `${component.size.width}px`,
-        height: `${component.size.height}px`,
-        cursor: resizing ? 'auto' : 'move',
-        opacity: isDragging ? 0.5 : 1,
-        border: '1px dashed #ccc',
-        boxSizing: 'border-box'
-      }}
+      className={`placed-component ${isDragging ? 'dragging' : ''} ${component.isSelected ? 'selected-component' : ''} ${isChildOfGridComponent ? 'grid-child' : ''}`}
+      style={componentStyle}
       onClick={handleSelect}
     >
       {renderComponent()}
       
       {/* 리사이즈 핸들 */}
-      <div className="resize-handle e" onMouseDown={(e) => handleResizeStart(e, 'e')}></div>
-      <div className="resize-handle w" onMouseDown={(e) => handleResizeStart(e, 'w')}></div>
-      <div className="resize-handle s" onMouseDown={(e) => handleResizeStart(e, 's')}></div>
-      <div className="resize-handle n" onMouseDown={(e) => handleResizeStart(e, 'n')}></div>
-      <div className="resize-handle se" onMouseDown={(e) => handleResizeStart(e, 'se')}></div>
-      <div className="resize-handle sw" onMouseDown={(e) => handleResizeStart(e, 'sw')}></div>
-      <div className="resize-handle ne" onMouseDown={(e) => handleResizeStart(e, 'ne')}></div>
-      <div className="resize-handle nw" onMouseDown={(e) => handleResizeStart(e, 'nw')}></div>
+      {!isGridComponent && (
+        <>
+          <div className="resize-handle e" onMouseDown={(e) => handleResizeStart(e, 'e')}></div>
+          <div className="resize-handle w" onMouseDown={(e) => handleResizeStart(e, 'w')}></div>
+          <div className="resize-handle s" onMouseDown={(e) => handleResizeStart(e, 's')}></div>
+          <div className="resize-handle n" onMouseDown={(e) => handleResizeStart(e, 'n')}></div>
+          <div className="resize-handle se" onMouseDown={(e) => handleResizeStart(e, 'se')}></div>
+          <div className="resize-handle sw" onMouseDown={(e) => handleResizeStart(e, 'sw')}></div>
+          <div className="resize-handle ne" onMouseDown={(e) => handleResizeStart(e, 'ne')}></div>
+          <div className="resize-handle nw" onMouseDown={(e) => handleResizeStart(e, 'nw')}></div>
+        </>
+      )}
     </div>
   );
 }

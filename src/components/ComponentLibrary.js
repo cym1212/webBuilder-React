@@ -142,43 +142,30 @@ function ComponentLibrary() {
         name="상세 페이지" 
         icon="📄" 
       />
+      <DraggableComponent 
+        type={COMPONENT_TYPES.ROW} 
+        name="행 (Row)" 
+        icon="↔️" 
+      />
+      <DraggableComponent 
+        type={COMPONENT_TYPES.COLUMN} 
+        name="열 (Column)" 
+        icon="↕️" 
+      />
     </div>
   );
 
   // 탭 2에 표시할 컴포넌트 (예시)
   const renderComponentsTab2 = () => (
     <div className="components-list">
-      {/* <DraggableComponent 
-        type={COMPONENT_TYPES.TEXT} 
-        name="테마 텍스트" 
-        icon="T" 
-      />
-      <DraggableComponent 
-        type={COMPONENT_TYPES.CONTAINER} 
-        name="테마 영역" 
-        icon="⬚" 
-      />
-      <DraggableComponent 
-        type={COMPONENT_TYPES.BUTTON} 
-        name="테마 버튼" 
-        icon="⏺" 
-      /> */}
+      {/* 탭 2에 표시할 컴포넌트 */}
     </div>
   );
 
   // 탭 3에 표시할 컴포넌트 (예시)
   const renderComponentsTab3 = () => (
     <div className="components-list">
-      {/* <DraggableComponent 
-        type={COMPONENT_TYPES.BOARD} 
-        name="고급 게시판" 
-        icon="📋" 
-      />
-      <DraggableComponent 
-        type={COMPONENT_TYPES.DETAIL_PAGE} 
-        name="고급 상세 페이지" 
-        icon="📄" 
-      /> */}
+      {/* 탭 3에 표시할 컴포넌트 */}
     </div>
   );
 

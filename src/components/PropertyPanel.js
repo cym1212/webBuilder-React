@@ -418,7 +418,7 @@ function PropertyPanel() {
               <label>테두리 둥글기</label>
               <input 
                 type="number" 
-                value={parseInt(selectedComponent.style.borderRadius || '8')} 
+                value={parseInt(selectedComponent.style.borderRadius || '4')} 
                 onChange={(e) => handleStyleChange('borderRadius', `${e.target.value}px`)}
               />
             </div>
@@ -620,6 +620,150 @@ function PropertyPanel() {
               <SketchPicker 
                 color={selectedComponent.style.buttonColor || '#4a90e2'} 
                 onChange={(color) => handleStyleChange('buttonColor', color.hex)}
+              />
+            </div>
+          </>
+        );
+        
+      case COMPONENT_TYPES.ROW:
+        return (
+          <>
+            <div className="property-group">
+              <label>여백 (gutter)</label>
+              <input 
+                type="number" 
+                value={selectedComponent.data?.gutter || 30} 
+                onChange={(e) => handleDataChange('gutter', parseInt(e.target.value))}
+              />
+            </div>
+            <div className="property-group">
+              <label>세로 정렬</label>
+              <select 
+                value={selectedComponent.data?.verticalAlign || 'top'} 
+                onChange={(e) => handleDataChange('verticalAlign', e.target.value)}
+              >
+                <option value="top">위</option>
+                <option value="middle">가운데</option>
+                <option value="bottom">아래</option>
+                <option value="stretch">늘이기</option>
+              </select>
+            </div>
+            <div className="property-group">
+              <label>가로 정렬</label>
+              <select 
+                value={selectedComponent.data?.horizontalAlign || 'left'} 
+                onChange={(e) => handleDataChange('horizontalAlign', e.target.value)}
+              >
+                <option value="left">왼쪽</option>
+                <option value="center">가운데</option>
+                <option value="right">오른쪽</option>
+                <option value="between">균등 분배</option>
+                <option value="around">주변 균등</option>
+              </select>
+            </div>
+            <div className="property-group">
+              <label>배경색</label>
+              <SketchPicker 
+                color={selectedComponent.style.backgroundColor || 'transparent'} 
+                onChange={(color) => handleStyleChange('backgroundColor', color.hex)}
+              />
+            </div>
+          </>
+        );
+        
+      case COMPONENT_TYPES.COLUMN:
+        return (
+          <>
+            <div className="property-group">
+              <label>기본 너비 (xs)</label>
+              <select 
+                value={selectedComponent.data?.xs || 12} 
+                onChange={(e) => handleDataChange('xs', parseInt(e.target.value))}
+              >
+                <option value="0">자동</option>
+                <option value="1">1/12</option>
+                <option value="2">2/12</option>
+                <option value="3">3/12</option>
+                <option value="4">4/12</option>
+                <option value="5">5/12</option>
+                <option value="6">6/12</option>
+                <option value="7">7/12</option>
+                <option value="8">8/12</option>
+                <option value="9">9/12</option>
+                <option value="10">10/12</option>
+                <option value="11">11/12</option>
+                <option value="12">12/12</option>
+              </select>
+            </div>
+            <div className="property-group">
+              <label>태블릿 너비 (md)</label>
+              <select 
+                value={selectedComponent.data?.md || ''} 
+                onChange={(e) => e.target.value ? handleDataChange('md', parseInt(e.target.value)) : handleDataChange('md', undefined)}
+              >
+                <option value="">기본값</option>
+                <option value="0">자동</option>
+                <option value="1">1/12</option>
+                <option value="2">2/12</option>
+                <option value="3">3/12</option>
+                <option value="4">4/12</option>
+                <option value="5">5/12</option>
+                <option value="6">6/12</option>
+                <option value="7">7/12</option>
+                <option value="8">8/12</option>
+                <option value="9">9/12</option>
+                <option value="10">10/12</option>
+                <option value="11">11/12</option>
+                <option value="12">12/12</option>
+              </select>
+            </div>
+            <div className="property-group">
+              <label>데스크탑 너비 (lg)</label>
+              <select 
+                value={selectedComponent.data?.lg || ''} 
+                onChange={(e) => e.target.value ? handleDataChange('lg', parseInt(e.target.value)) : handleDataChange('lg', undefined)}
+              >
+                <option value="">기본값</option>
+                <option value="0">자동</option>
+                <option value="1">1/12</option>
+                <option value="2">2/12</option>
+                <option value="3">3/12</option>
+                <option value="4">4/12</option>
+                <option value="5">5/12</option>
+                <option value="6">6/12</option>
+                <option value="7">7/12</option>
+                <option value="8">8/12</option>
+                <option value="9">9/12</option>
+                <option value="10">10/12</option>
+                <option value="11">11/12</option>
+                <option value="12">12/12</option>
+              </select>
+            </div>
+            <div className="property-group">
+              <label>오프셋</label>
+              <select 
+                value={selectedComponent.data?.offset || 0} 
+                onChange={(e) => handleDataChange('offset', parseInt(e.target.value))}
+              >
+                <option value="0">없음</option>
+                <option value="1">1/12</option>
+                <option value="2">2/12</option>
+                <option value="3">3/12</option>
+                <option value="4">4/12</option>
+                <option value="5">5/12</option>
+                <option value="6">6/12</option>
+                <option value="7">7/12</option>
+                <option value="8">8/12</option>
+                <option value="9">9/12</option>
+                <option value="10">10/12</option>
+                <option value="11">11/12</option>
+              </select>
+            </div>
+            <div className="property-group">
+              <label>배경색</label>
+              <SketchPicker 
+                color={selectedComponent.style.backgroundColor || 'transparent'} 
+                onChange={(color) => handleStyleChange('backgroundColor', color.hex)}
               />
             </div>
           </>

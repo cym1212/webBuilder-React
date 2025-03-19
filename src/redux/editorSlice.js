@@ -23,6 +23,8 @@ const defaultComponentSizes = {
   [COMPONENT_TYPES.LOGIN]: { width: 1200, height: 800 },
   [COMPONENT_TYPES.BOARD]: { width: 1800, height: 1200 },
   [COMPONENT_TYPES.DETAIL_PAGE]: { width: 1800, height: 1600 },
+  [COMPONENT_TYPES.ROW]: { width: 600, height: 100 },
+  [COMPONENT_TYPES.COLUMN]: { width: 200, height: 200 },
 };
 
 // 컴포넌트 타입별 기본 데이터 구조
@@ -43,6 +45,20 @@ const defaultComponentData = {
   [COMPONENT_TYPES.DETAIL_PAGE]: { 
     productId: '1',
     apiUrl: 'https://api.example.com/products'
+  },
+  [COMPONENT_TYPES.ROW]: {
+    gutter: 30,
+    verticalAlign: 'top',
+    horizontalAlign: 'left'
+  },
+  [COMPONENT_TYPES.COLUMN]: {
+    xs: 12,
+    sm: undefined,
+    md: undefined,
+    lg: undefined,
+    xl: undefined,
+    offset: 0,
+    gutter: 30
   }
 };
 
@@ -89,6 +105,12 @@ const defaultComponentStyles = {
     boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)', 
     padding: '20px',
     buttonColor: '#4a90e2'
+  },
+  [COMPONENT_TYPES.ROW]: {
+    backgroundColor: 'transparent'
+  },
+  [COMPONENT_TYPES.COLUMN]: {
+    backgroundColor: 'transparent'
   }
 };
 
@@ -116,7 +138,8 @@ export const editorSlice = createSlice({
         size: component.size || defaultSize,
         style: componentStyle,
         content: component.content || '',
-        data: component.data || defaultData
+        data: component.data || defaultData,
+        parentId: component.parentId || null // 부모 컴포넌트 ID
       });
       
       state.selectedComponentId = component.id;
@@ -129,8 +152,27 @@ export const editorSlice = createSlice({
       }
     },
     removeComponent: (state, action) => {
-      state.components = state.components.filter(comp => comp.id !== action.payload);
-      if (state.selectedComponentId === action.payload) {
+      const componentId = action.payload;
+      
+      // 삭제할 컴포넌트의 자식 컴포넌트들도 함께 삭제
+      const componentsToRemove = [componentId];
+      
+      // 자식 컴포넌트들 찾기 (재귀적으로)
+      const findChildren = (parentId) => {
+        state.components.forEach(comp => {
+          if (comp.parentId === parentId) {
+            componentsToRemove.push(comp.id);
+            findChildren(comp.id);
+          }
+        });
+      };
+      
+      findChildren(componentId);
+      
+      // 모든 관련 컴포넌트 삭제
+      state.components = state.components.filter(comp => !componentsToRemove.includes(comp.id));
+      
+      if (state.selectedComponentId === componentId) {
         state.selectedComponentId = null;
       }
     },
@@ -189,10 +231,15 @@ export const editorSlice = createSlice({
       localStorage.setItem('savedProjects', JSON.stringify(state.savedProjects));
     },
     updateComponentPosition: (state, action) => {
-      const { id, newPosition } = action.payload;
+      const { id, newPosition, parentId } = action.payload;
       const component = state.components.find(comp => comp.id === id);
       if (component) {
-        component.position = newPosition;  
+        component.position = newPosition;
+        
+        // parentId가 지정되었다면 업데이트 (부모 컴포넌트 변경)
+        if (parentId !== undefined) {
+          component.parentId = parentId;
+        }
       }
     },
     exportProjectToJSON: (state) => {
