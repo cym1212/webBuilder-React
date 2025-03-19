@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { SketchPicker } from 'react-color';
 import {
@@ -7,16 +7,57 @@ import {
   selectSelectedComponent
 } from '../redux/editorSlice';
 import { COMPONENT_TYPES } from '../constants';
+import LayoutSelector from './LayoutSelector';
 
 function PropertyPanel() {
   const dispatch = useDispatch();
   const selectedComponent = useSelector(selectSelectedComponent);
+  const [activeTab, setActiveTab] = useState('layout'); // 'layout' 또는 'component'
+  
+  // 탭 선택 핸들러
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+  };
+  
+  // 패널 상단 탭 UI
+  const renderTabs = () => (
+    <div className="property-tabs mb-4">
+      <ul className="nav nav-tabs">
+        <li className="nav-item">
+          <button 
+            className={`nav-link ${activeTab === 'layout' ? 'active' : ''}`}
+            onClick={() => handleTabChange('layout')}
+          >
+            레이아웃
+          </button>
+        </li>
+        <li className="nav-item">
+          <button 
+            className={`nav-link ${activeTab === 'component' ? 'active' : ''}`}
+            onClick={() => handleTabChange('component')}
+          >
+            컴포넌트
+          </button>
+        </li>
+      </ul>
+    </div>
+  );
   
   if (!selectedComponent) {
     return (
       <div className="property-panel">
-        <h3>속성</h3>
-        <p>컴포넌트를 선택하세요</p>
+        {renderTabs()}
+        
+        {activeTab === 'layout' ? (
+          <div className="layout-options">
+            <LayoutSelector />
+          </div>
+        ) : (
+          <div className="component-options">
+            <h3>속성</h3>
+            <p>컴포넌트를 선택하세요</p>
+          </div>
+        )}
       </div>
     );
   }
@@ -590,68 +631,73 @@ function PropertyPanel() {
   };
   
   return (
-    <div className="property-panel" style={{ 
-      height: '100%', 
-      overflowY: 'auto', 
-      paddingRight: '10px',
-      display: 'flex',
-      flexDirection: 'column'
-    }}>
-      <h3>속성</h3>
+    <div className="property-panel">
+      {renderTabs()}
       
-      <div className="property-group">
-        <label>위치 X</label>
-        <input 
-          type="number" 
-          value={selectedComponent.position.x} 
-          onChange={(e) => dispatch(updateComponent({
-            id: selectedComponent.id,
-            changes: { position: { ...selectedComponent.position, x: parseInt(e.target.value) } }
-          }))}
-        />
-      </div>
-      
-      <div className="property-group">
-        <label>위치 Y</label>
-        <input 
-          type="number" 
-          value={selectedComponent.position.y} 
-          onChange={(e) => dispatch(updateComponent({
-            id: selectedComponent.id,
-            changes: { position: { ...selectedComponent.position, y: parseInt(e.target.value) } }
-          }))}
-        />
-      </div>
-      
-      <div className="property-group">
-        <label>너비</label>
-        <input 
-          type="number" 
-          value={selectedComponent.size.width} 
-          onChange={(e) => dispatch(updateComponent({
-            id: selectedComponent.id,
-            changes: { size: { ...selectedComponent.size, width: parseInt(e.target.value) } }
-          }))}
-        />
-      </div>
-      
-      <div className="property-group">
-        <label>높이</label>
-        <input 
-          type="number" 
-          value={selectedComponent.size.height} 
-          onChange={(e) => dispatch(updateComponent({
-            id: selectedComponent.id,
-            changes: { size: { ...selectedComponent.size, height: parseInt(e.target.value) } }
-          }))}
-        />
-      </div>
-      
-      {renderProperties()}
-      
-      <button className="delete-button" onClick={handleDelete} style={{ marginTop: '20px' }}>
-        컴포넌트 삭제
-      </button>
+      {activeTab === 'layout' ? (
+        <div className="layout-options">
+          <LayoutSelector />
+        </div>
+      ) : (
+        <div className="component-options">
+          {/* 컴포넌트 위치 및 크기 속성 */}
+          <div className="property-group">
+            <h3>속성</h3>
+            <label>위치 X</label>
+            <input 
+              type="number" 
+              value={selectedComponent.position.x} 
+              onChange={(e) => dispatch(updateComponent({
+                id: selectedComponent.id,
+                changes: { position: { ...selectedComponent.position, x: parseInt(e.target.value) } }
+              }))}
+            />
+          </div>
+          
+          <div className="property-group">
+            <label>위치 Y</label>
+            <input 
+              type="number" 
+              value={selectedComponent.position.y} 
+              onChange={(e) => dispatch(updateComponent({
+                id: selectedComponent.id,
+                changes: { position: { ...selectedComponent.position, y: parseInt(e.target.value) } }
+              }))}
+            />
+          </div>
+          
+          <div className="property-group">
+            <label>너비</label>
+            <input 
+              type="number" 
+              value={selectedComponent.size.width} 
+              onChange={(e) => dispatch(updateComponent({
+                id: selectedComponent.id,
+                changes: { size: { ...selectedComponent.size, width: parseInt(e.target.value) } }
+              }))}
+            />
+          </div>
+          
+          <div className="property-group">
+            <label>높이</label>
+            <input 
+              type="number" 
+              value={selectedComponent.size.height} 
+              onChange={(e) => dispatch(updateComponent({
+                id: selectedComponent.id,
+                changes: { size: { ...selectedComponent.size, height: parseInt(e.target.value) } }
+              }))}
+            />
+          </div>
+          
+          {/* 컴포넌트 타입별 속성 */}
+          {renderProperties()}
+          
+          <button className="delete-button" onClick={handleDelete}>
+            컴포넌트 삭제
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,12 +1,17 @@
 import { createSlice, createAction, createReducer } from '@reduxjs/toolkit';
 import { COMPONENT_TYPES } from '../constants';
+import { getLayoutDefaultPropsById } from '../layouts';
 
 const initialState = {
   components: [],  // 캔버스에 추가된 컴포넌트 목록
   selectedComponentId: null,  // 현재 선택된 컴포넌트의 ID
   canvasSize: { width: 1200, height: 800 },  // 캔버스 크기
   projectName: '새 프로젝트',  // 프로젝트 이름
-  savedProjects: []  // 저장된 프로젝트 목록
+  savedProjects: [],  // 저장된 프로젝트 목록
+  layout: {
+    selectedLayout: '', // 선택된 레이아웃 ID
+    layoutProps: {}     // 레이아웃 속성
+  }
 };
 
 // 컴포넌트 타입별 기본 크기 설정
@@ -148,6 +153,7 @@ export const editorSlice = createSlice({
         name: state.projectName,
         components: [...state.components],
         canvasSize: { ...state.canvasSize },
+        layout: { ...state.layout },
         timestamp: new Date().toISOString()
       };
       
@@ -168,6 +174,7 @@ export const editorSlice = createSlice({
         state.components = [...project.components];
         state.projectName = project.name;
         state.canvasSize = { ...project.canvasSize };
+        state.layout = project.layout ? { ...project.layout } : initialState.layout;
         state.selectedComponentId = null;
       }
     },
@@ -218,6 +225,22 @@ export const editorSlice = createSlice({
         state.canvasSize = projectData.canvasSize || state.canvasSize;
         state.selectedComponentId = null;
       }
+    },
+    selectLayout: (state, action) => {
+      const layoutId = action.payload;
+      state.layout.selectedLayout = layoutId;
+      // 기본 속성 설정
+      state.layout.layoutProps = getLayoutDefaultPropsById(layoutId);
+    },
+    updateLayoutProps: (state, action) => {
+      state.layout.layoutProps = {
+        ...state.layout.layoutProps,
+        ...action.payload
+      };
+    },
+    resetLayout: (state) => {
+      state.layout.selectedLayout = '';
+      state.layout.layoutProps = {};
     }
   }
 });
@@ -235,7 +258,10 @@ export const {
   loadComponents,
   updateComponentPosition,
   exportProjectToJSON,
-  importProjectFromJSON
+  importProjectFromJSON,
+  selectLayout,
+  updateLayoutProps,
+  resetLayout
 } = editorSlice.actions;
 
 export const selectComponents = (state) => state.editor.components;
@@ -247,6 +273,7 @@ export const selectSelectedComponent = (state) => {
 export const selectCanvasSize = (state) => state.editor.canvasSize;
 export const selectProjectName = (state) => state.editor.projectName;
 export const selectSavedProjects = (state) => state.editor.savedProjects;
+export const selectLayoutInfo = (state) => state.editor.layout;
 
 export const loadComponets = createAction('editor/loadComponents');
 

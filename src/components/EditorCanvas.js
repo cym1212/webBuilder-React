@@ -2,13 +2,25 @@ import React, { useEffect } from 'react';
 import { useDrop } from 'react-dnd';
 import { useDispatch, useSelector } from 'react-redux';
 import { v4 as uuidv4 } from 'uuid';
-import { addComponent, updateComponentPosition, selectComponents, selectSelectedComponentId } from '../redux/editorSlice';
+import { 
+  addComponent, 
+  updateComponentPosition, 
+  selectComponents, 
+  selectSelectedComponentId,
+  selectLayoutInfo
+} from '../redux/editorSlice';
 import ComponentRenderer from './ComponentRenderer';
+import { getLayoutComponentById } from '../layouts';
 
 function EditorCanvas() {
   const dispatch = useDispatch();
   const components = useSelector(selectComponents);
   const selectedComponentId = useSelector(selectSelectedComponentId);
+  const layoutInfo = useSelector(selectLayoutInfo);
+  const { selectedLayout, layoutProps } = layoutInfo;
+
+  // 선택된 레이아웃 컴포넌트 가져오기
+  const LayoutComponent = selectedLayout ? getLayoutComponentById(selectedLayout) : null;
 
   // ✅ 겹치지 않는 위치 찾기 함수
   // const getNonOverlappingPosition = (x, y, width, height) => {
@@ -144,12 +156,29 @@ function EditorCanvas() {
         backgroundColor: isOver ? '#f0f8ff' : 'white',
         position: 'relative',
         width: '100%',
-        height: '100%'
+        height: '100%',
+        overflow: 'auto'
       }}
     >
-      {components.map(component => (
-        <ComponentRenderer key={component.id} component={component} />
-      ))}
+      {LayoutComponent ? (
+        <div className="layout-container" style={{ position: 'relative', height: '100%', width: '100%' }}>
+          <LayoutComponent {...layoutProps}>
+            {/* 레이아웃 내부에 기존 컴포넌트들 렌더링 */}
+            <div className="layout-content">
+              {components.map(component => (
+                <ComponentRenderer key={component.id} component={component} />
+              ))}
+            </div>
+          </LayoutComponent>
+        </div>
+      ) : (
+        // 기존 방식으로 컴포넌트 렌더링
+        <>
+          {components.map(component => (
+            <ComponentRenderer key={component.id} component={component} />
+          ))}
+        </>
+      )}
     </div>
   );
 }
