@@ -1,18 +1,189 @@
 import React from "react";
 import PropTypes from "prop-types";
 
-const BoardLayout = ({ children, showSidebar = true, sidebarPosition = "right" }) => {
+const BoardLayout = ({ 
+  children, 
+  showSidebar = true, 
+  sidebarPosition = "right",
+  headerStyle = "community",
+  footerStyle = "community",
+  colorTheme = "light"
+}) => {
+  // 색상 테마 스타일
+  const getThemeColors = () => {
+    switch(colorTheme) {
+      case 'dark':
+        return {
+          bgMain: '#212529',
+          bgSecondary: '#343a40',
+          text: '#f8f9fa',
+          accent: '#6c757d',
+          border: '#495057'
+        };
+      case 'colorful':
+        return {
+          bgMain: '#ffffff',
+          bgSecondary: '#f8f9fa',
+          text: '#212529',
+          accent: '#0d6efd',
+          border: '#dee2e6'
+        };
+      case 'light':
+      default:
+        return {
+          bgMain: '#ffffff',
+          bgSecondary: '#f8f9fa',
+          text: '#212529',
+          accent: '#6c757d',
+          border: '#dee2e6'
+        };
+    }
+  };
+
+  // 헤더 스타일 렌더링
+  const renderHeader = () => {
+    const colors = getThemeColors();
+
+    switch(headerStyle) {
+      case 'forum':
+        return (
+          <div className="header-container p-3 mb-4" style={{ backgroundColor: colors.bgSecondary, borderBottom: `1px solid ${colors.border}` }}>
+            <div className="d-flex justify-content-between align-items-center">
+              <div className="d-flex align-items-center">
+                <h2 className="mb-0 me-4" style={{ color: colors.text }}>커뮤니티 포럼</h2>
+                <div className="btn-group">
+                  <button className="btn btn-sm btn-outline-secondary">홈</button>
+                  <button className="btn btn-sm btn-outline-secondary">게시판</button>
+                  <button className="btn btn-sm btn-outline-secondary">회원목록</button>
+                  <button className="btn btn-sm btn-outline-secondary">FAQ</button>
+                </div>
+              </div>
+              <div>
+                <button className="btn btn-sm btn-outline-primary me-2">로그인</button>
+                <button className="btn btn-sm btn-primary">회원가입</button>
+              </div>
+            </div>
+          </div>
+        );
+        
+      case 'simple':
+        return (
+          <div className="header-container p-3 mb-4" style={{ backgroundColor: colors.bgMain, borderBottom: `1px solid ${colors.border}` }}>
+            <div className="d-flex justify-content-between align-items-center">
+              <h2 className="mb-0" style={{ color: colors.text }}>심플 게시판</h2>
+              <div className="d-flex">
+                <input type="text" className="form-control form-control-sm me-2" placeholder="검색..." />
+                <button className="btn btn-sm btn-secondary">검색</button>
+              </div>
+            </div>
+          </div>
+        );
+        
+      case 'community':
+      default:
+        return (
+          <div className="header-container p-4 mb-4" style={{ 
+            backgroundColor: colors.bgSecondary, 
+            borderBottom: `1px solid ${colors.border}`,
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          }}>
+            <div className="row align-items-center">
+              <div className="col-lg-4">
+                <h2 className="mb-0" style={{ color: colors.text }}>커뮤니티 게시판</h2>
+              </div>
+              <div className="col-lg-4">
+                <div className="input-group">
+                  <input type="text" className="form-control" placeholder="게시글 검색..." />
+                  <button className="btn btn-primary">검색</button>
+                </div>
+              </div>
+              <div className="col-lg-4 text-end">
+                <button className="btn btn-outline-secondary me-2">로그인</button>
+                <button className="btn btn-primary">새 글 작성</button>
+              </div>
+            </div>
+          </div>
+        );
+    }
+  };
+
+  // 푸터 스타일 렌더링
+  const renderFooter = () => {
+    const colors = getThemeColors();
+
+    switch(footerStyle) {
+      case 'simple':
+        return (
+          <div className="footer-container p-3 mt-4" style={{ backgroundColor: colors.bgSecondary, borderTop: `1px solid ${colors.border}` }}>
+            <p className="mb-0 text-center" style={{ color: colors.text }}>© 2023 심플 게시판. All rights reserved.</p>
+          </div>
+        );
+        
+      case 'detailed':
+        return (
+          <div className="footer-container p-4 mt-4" style={{ backgroundColor: colors.bgSecondary, borderTop: `1px solid ${colors.border}` }}>
+            <div className="row">
+              <div className="col-md-6">
+                <h5 style={{ color: colors.text }}>게시판 정보</h5>
+                <p style={{ color: colors.text }}>이 게시판은 다양한 주제에 대한 의견을 나누는 공간입니다.</p>
+                <p style={{ color: colors.text }}>문의사항: contact@example.com</p>
+              </div>
+              <div className="col-md-3">
+                <h5 style={{ color: colors.text }}>바로가기</h5>
+                <ul className="list-unstyled">
+                  <li><a href="#" style={{ color: colors.accent }}>이용약관</a></li>
+                  <li><a href="#" style={{ color: colors.accent }}>개인정보처리방침</a></li>
+                  <li><a href="#" style={{ color: colors.accent }}>FAQ</a></li>
+                </ul>
+              </div>
+              <div className="col-md-3">
+                <h5 style={{ color: colors.text }}>팔로우</h5>
+                <div className="d-flex">
+                  <a href="#" className="me-2" style={{ color: colors.accent }}><i className="fab fa-facebook"></i></a>
+                  <a href="#" className="me-2" style={{ color: colors.accent }}><i className="fab fa-twitter"></i></a>
+                  <a href="#" className="me-2" style={{ color: colors.accent }}><i className="fab fa-instagram"></i></a>
+                </div>
+              </div>
+            </div>
+            <div className="text-center mt-3" style={{ color: colors.text }}>
+              <p className="mb-0">© 2023 상세 게시판. All rights reserved.</p>
+            </div>
+          </div>
+        );
+        
+      case 'community':
+      default:
+        return (
+          <div className="footer-container p-4 mt-4" style={{ 
+            backgroundColor: colors.bgSecondary, 
+            borderTop: `1px solid ${colors.border}`,
+            boxShadow: '0 -2px 4px rgba(0,0,0,0.05)'
+          }}>
+            <div className="row">
+              <div className="col-md-8">
+                <div className="d-flex">
+                  <a href="#" className="me-3" style={{ color: colors.text }}>이용약관</a>
+                  <a href="#" className="me-3" style={{ color: colors.text }}>개인정보처리방침</a>
+                  <a href="#" className="me-3" style={{ color: colors.text }}>커뮤니티 가이드라인</a>
+                  <a href="#" style={{ color: colors.text }}>문의하기</a>
+                </div>
+              </div>
+              <div className="col-md-4 text-end">
+                <p className="mb-0" style={{ color: colors.text }}>© 2023 커뮤니티 게시판. All rights reserved.</p>
+              </div>
+            </div>
+          </div>
+        );
+    }
+  };
+
   return (
     <div className="board-layout">
       <div className="container">
-        <div className="row">
-          {/* 헤더 영역 */}
-          <div className="col-12 mb-4">
-            <div className="header-container p-3 bg-light border">
-              <h2 className="mb-0">게시판 레이아웃</h2>
-            </div>
-          </div>
+        {/* 헤더 영역 */}
+        {renderHeader()}
 
+        <div className="row">
           {/* 왼쪽 사이드바 */}
           {showSidebar && sidebarPosition === "left" && (
             <div className="col-lg-3">
@@ -108,13 +279,7 @@ const BoardLayout = ({ children, showSidebar = true, sidebarPosition = "right" }
         </div>
         
         {/* 푸터 영역 */}
-        <div className="row mt-4">
-          <div className="col-12">
-            <div className="footer-container p-3 bg-light border">
-              <p className="mb-0 text-center">© 2023 게시판 레이아웃. All rights reserved.</p>
-            </div>
-          </div>
-        </div>
+        {renderFooter()}
       </div>
     </div>
   );
@@ -123,7 +288,10 @@ const BoardLayout = ({ children, showSidebar = true, sidebarPosition = "right" }
 BoardLayout.propTypes = {
   children: PropTypes.node,
   showSidebar: PropTypes.bool,
-  sidebarPosition: PropTypes.string
+  sidebarPosition: PropTypes.string,
+  headerStyle: PropTypes.oneOf(['community', 'forum', 'simple']),
+  footerStyle: PropTypes.oneOf(['community', 'simple', 'detailed']),
+  colorTheme: PropTypes.oneOf(['light', 'dark', 'colorful'])
 };
 
 export default BoardLayout; 

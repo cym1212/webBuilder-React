@@ -22,37 +22,22 @@ function EditorCanvas() {
   // 선택된 레이아웃 컴포넌트 가져오기
   const LayoutComponent = selectedLayout ? getLayoutComponentById(selectedLayout) : null;
 
-  // ✅ 겹치지 않는 위치 찾기 함수
-  // const getNonOverlappingPosition = (x, y, width, height) => {
-  //   let newX = x;
-  //   let newY = y;
+  // 컴포넌트의 최대 Y 위치를 계산하여 메인 영역 높이 결정
+  const calculateMainContentHeight = () => {
+    if (components.length === 0) return 300; // 기본 최소 높이
 
-  //   // 다른 컴포넌트와 충돌하는지 검사
-  //   const isOverlapping = (nx, ny) => {
-  //     return components.some(comp => {
-  //       return (
-  //         nx < comp.position.x + comp.size.width &&
-  //         nx + width > comp.position.x &&
-  //         ny < comp.position.y + comp.size.height &&
-  //         ny + height > comp.position.y
-  //       );
-  //     });
-  //   };
+    let maxY = 0;
+    components.forEach(comp => {
+      const bottomY = comp.position.y + comp.size.height;
+      if (bottomY > maxY) {
+        maxY = bottomY;
+      }
+    });
 
-  //   // 겹치는 경우, 일정 간격(5px)씩 이동하여 빈 공간 찾기
-  //   while (isOverlapping(newX, newY)) {
-  //     newX += 5;  
-  //     if (newX + width > 1200) {  
-  //       newX = x;
-  //       newY += 5;
-  //     }
-  //     if (newY + height > 800) {  
-  //       break;
-  //     }
-  //   }
+    return Math.max(300, maxY + 50); // 최소 300px, 컴포넌트가 있으면 가장 낮은 지점 + 50px 여백
+  };
 
-  //   return { x: newX, y: newY };
-  // };
+  const mainContentHeight = calculateMainContentHeight();
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -69,7 +54,7 @@ function EditorCanvas() {
           y = Math.max(0, y - step);
           break;
         case 'ArrowDown':
-          y = Math.min(800 - selectedComponent.size.height, y + step);
+          y = Math.min(mainContentHeight - selectedComponent.size.height, y + step);
           break;
         case 'ArrowLeft':
           x = Math.max(0, x - step);
@@ -81,8 +66,6 @@ function EditorCanvas() {
           return;
       }
 
-      // const { x: newX, y: newY } = getNonOverlappingPosition(x, y, selectedComponent.size.width, selectedComponent.size.height, selectedComponent.id);
-
       dispatch(updateComponentPosition({ id: selectedComponentId, newPosition: { x, y } }));
     };
 
@@ -90,7 +73,7 @@ function EditorCanvas() {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [dispatch, selectedComponentId, components]);
+  }, [dispatch, selectedComponentId, components, mainContentHeight]);
 
   const [{ isOver }, drop] = useDrop(() => ({
     accept: 'COMPONENT',
@@ -102,8 +85,28 @@ function EditorCanvas() {
       if (!canvas) return; 
 
       const canvasRect = canvas.getBoundingClientRect();
+      
+      // 캔버스 좌표로 변환
       let x = offset.x - canvasRect.left;
       let y = offset.y - canvasRect.top;
+      
+      // 레이아웃 사용 시 메인 컨텐츠 영역 내에 배치되도록 제한
+      if (LayoutComponent) {
+        const mainContent = document.querySelector('.layout-main-content');
+        if (mainContent) {
+          const mainContentRect = mainContent.getBoundingClientRect();
+          // 메인 컨텐츠 영역 내 상대적 위치로 변환
+          x = offset.x - mainContentRect.left;
+          y = offset.y - mainContentRect.top;
+          
+          // 메인 컨텐츠 영역 내에 있는지 확인
+          if (x < 0 || x > mainContentRect.width || y < 0) {
+            // 영역 밖이면 가장 가까운 메인 컨텐츠 영역 내 지점으로 조정
+            x = Math.max(0, Math.min(x, mainContentRect.width));
+            y = Math.max(0, y);
+          }
+        }
+      }
 
       // 컴포넌트 타입에 따른 기본 크기 설정
       let defaultWidth = 150;
@@ -151,7 +154,7 @@ function EditorCanvas() {
     <div 
       id="editor-canvas"
       ref={drop}  
-      className="editor-canvas"
+      className={`editor-canvas ${isOver ? 'drop-active' : ''}`}
       style={{ 
         backgroundColor: isOver ? '#f0f8ff' : 'white',
         position: 'relative',
@@ -163,8 +166,19 @@ function EditorCanvas() {
       {LayoutComponent ? (
         <div className="layout-container" style={{ position: 'relative', height: '100%', width: '100%' }}>
           <LayoutComponent {...layoutProps}>
-            {/* 레이아웃 내부에 기존 컴포넌트들 렌더링 */}
-            <div className="layout-content">
+            {/* 레이아웃 내부에 메인 컨텐츠 영역을 정의하고, 그 안에 컴포넌트 배치 */}
+            <div 
+              className="layout-main-content" 
+              style={{ 
+                position: 'relative', 
+                minHeight: `${mainContentHeight}px`, 
+                padding: '20px',
+                width: '100%',
+                backgroundColor: isOver ? 'rgba(0, 123, 255, 0.05)' : 'transparent',
+                border: isOver ? '2px dashed #007bff' : 'none',
+                transition: 'background-color 0.3s, border 0.3s'
+              }}
+            >
               {components.map(component => (
                 <ComponentRenderer key={component.id} component={component} />
               ))}
@@ -172,7 +186,7 @@ function EditorCanvas() {
           </LayoutComponent>
         </div>
       ) : (
-        // 기존 방식으로 컴포넌트 렌더링
+        // 레이아웃이 없는 경우 기존 방식으로 컴포넌트 렌더링
         <>
           {components.map(component => (
             <ComponentRenderer key={component.id} component={component} />
