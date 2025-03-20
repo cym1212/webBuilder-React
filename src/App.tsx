@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Provider, useDispatch } from 'react-redux';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { BrowserRouter } from 'react-router-dom';
 import store from './redux/store'; 
 import { loadSavedProjects } from './redux/editorSlice';
 import EditorCanvas from './components/EditorCanvas';
@@ -10,7 +11,6 @@ import PropertyPanel from './components/PropertyPanel';
 import ProjectManager from './components/ProjectManager';
 import BuildButton from './utils/BuildButton';
 import ProjectImportExport from './utils/ProjectImportExport';
-
 import './App.css';
 
 function AppContent() {
@@ -44,8 +44,10 @@ function AppContent() {
 
 function App() {
   return (
-    <Provider store={store}>  
-      <AppContent />
+    <Provider store={store}>
+      <BrowserRouter>
+        <AppContent />
+      </BrowserRouter>
     </Provider>
   );
 }

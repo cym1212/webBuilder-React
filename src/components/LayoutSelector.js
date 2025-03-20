@@ -6,7 +6,7 @@ import { selectLayout, updateLayoutProps, selectLayoutInfo } from '../redux/edit
 const LayoutSelector = () => {
   const dispatch = useDispatch();
   const layoutInfo = useSelector(selectLayoutInfo);
-  const { selectedLayout, layoutProps } = layoutInfo;
+  const { selectedLayout, layoutProps = {} } = layoutInfo;
   
   // 레이아웃 선택 핸들러
   const handleLayoutSelect = (layoutId) => {
@@ -25,7 +25,7 @@ const LayoutSelector = () => {
   
   return (
     <div className="layout-selector">
-      <h3 className="mb-3">레이아웃 옵션</h3>
+      <h3 className="mb-3">레이아웃 선택</h3>
       
       {/* 레이아웃 선택 영역 */}
       <div className="layout-selection mb-4">
@@ -34,7 +34,7 @@ const LayoutSelector = () => {
           <select 
             id="layout-select" 
             className="form-select"
-            value={selectedLayout}
+            value={selectedLayout || ''}
             onChange={(e) => handleLayoutSelect(e.target.value)}
           >
             <option value="">레이아웃 선택...</option>
@@ -63,7 +63,7 @@ const LayoutSelector = () => {
       </div>
       
       {/* 레이아웃 속성 설정 영역 */}
-      {selectedLayoutInfo && (
+      {selectedLayoutInfo && selectedLayoutInfo.options && (
         <div className="layout-properties">
           <h4 className="mb-3">레이아웃 속성</h4>
           
@@ -119,6 +119,12 @@ const LayoutSelector = () => {
               )}
             </div>
           ))}
+        </div>
+      )}
+      
+      {!selectedLayout && (
+        <div className="no-layout-selected">
+          <p className="text-muted">레이아웃을 선택해주세요</p>
         </div>
       )}
     </div>
