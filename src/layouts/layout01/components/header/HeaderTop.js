@@ -4,8 +4,7 @@ import clsx from "clsx";
 import LanguageCurrencyChanger from "./sub-components/LanguageCurrencyChanger";
 
 const HeaderTop = ({ borderStyle }) => {
-  const currency = useSelector((state) => state.currency) || { currencySymbol: "$", currencyRate: 1 };
-  
+  const currency = useSelector((state) => state.currency);
   return (
     <div className={clsx("header-top-wap", borderStyle === "fluid-border" && "border-bottom")}>
       <LanguageCurrencyChanger currency={currency} />

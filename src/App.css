@@ -744,3 +744,27 @@ body {
   font-size: 0.9rem;
   color: #2d3748;
 }
+
+/* 가져오기 버튼 스타일 */
+.import-button {
+  background-color: #f1f5f9;
+  color: #4a5568;
+}
+
+.import-button:hover {
+  background-color: #e2e8f0;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 불러오기 버튼 스타일 */
+.load-button {
+  background-color: #f1f5f9;
+  color: #4a5568;
+}
+
+.load-button:hover {
+  background-color: #e2e8f0;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
