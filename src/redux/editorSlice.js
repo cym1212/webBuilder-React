@@ -122,13 +122,13 @@ const defaultComponentStyles = {
   },
   [COMPONENT_TYPES.ROW]: {
     backgroundColor: 'transparent',
-    paddingLeft: '0px',
-    paddingRight: '0px'
+    paddingLeft: '20px',
+    paddingRight: '20px'
   },
   [COMPONENT_TYPES.COLUMN]: {
     backgroundColor: 'transparent',
-    paddingLeft: '0px',
-    paddingRight: '0px'
+    paddingLeft: '20px',
+    paddingRight: '20px'
   }
 };
 

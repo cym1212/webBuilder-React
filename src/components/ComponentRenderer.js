@@ -35,7 +35,8 @@ function ComponentRenderer({ component }) {
     type: 'COMPONENT',
     item: { 
       id: component.id, 
-      type: component.type,
+      type: component.type.toString(),
+      componentType: component.type,
       hasChildren: childComponents.length > 0  // 자식이 있는지 여부 전달
     },
     collect: (monitor) => ({
@@ -277,22 +278,34 @@ function ComponentRenderer({ component }) {
   }, [resizing]);
   
   const renderComponent = () => {
-    switch(component.type) {
-      case COMPONENT_TYPES.TEXT:
+    console.log('렌더링 컴포넌트 타입:', component.type); // 디버깅용
+    const componentType = `${component.type}`.toUpperCase();
+    
+    switch(componentType) {
+      case 'TEXT':
         return <TextComponent content={component.content} style={component.style} />;
-      case COMPONENT_TYPES.IMAGE:
-        return <ImageComponent src={component.content.src || ''} alt={component.content.alt || ''} style={component.style} />;
-      case COMPONENT_TYPES.CONTAINER:
-        return <ContainerComponent style={component.style} />;
-      case COMPONENT_TYPES.BUTTON:
+      case 'IMAGE':
+        return <ImageComponent src={component.content?.src || ''} alt={component.content?.alt || ''} style={component.style} />;
+      case 'CONTAINER':
+        return (
+          <ContainerComponent style={component.style}>
+            {childComponents.length > 0 ? 
+              childComponents.map(child => (
+                <ComponentRenderer key={child.id} component={child} />
+              )) 
+              : component.content
+            }
+          </ContainerComponent>
+        );
+      case 'BUTTON':
         return <ButtonComponent content={component.content || '버튼'} style={component.style} />;
-      case COMPONENT_TYPES.LOGIN:
+      case 'LOGIN':
         return <LoginForm style={component.style} />;
-      case COMPONENT_TYPES.BOARD:
+      case 'BOARD':
         return <BoardComponent style={component.style} data={component.data} />;
-      case COMPONENT_TYPES.DETAIL_PAGE:
+      case 'DETAIL_PAGE':
         return <DetailPageComponent style={component.style} data={component.data} />;
-      case COMPONENT_TYPES.ROW:
+      case 'ROW':
         return (
           <RowComponent 
             content={component.content} 
@@ -302,7 +315,7 @@ function ComponentRenderer({ component }) {
             components={allComponents}
           />
         );
-      case COMPONENT_TYPES.COLUMN:
+      case 'COLUMN':
         return (
           <ColumnComponent 
             content={component.content} 
@@ -313,6 +326,7 @@ function ComponentRenderer({ component }) {
           />
         );
       default:
+        console.warn('알 수 없는 컴포넌트 타입:', component.type);
         return <div>알 수 없는 컴포넌트 타입: {component.type}</div>;
     }
   };

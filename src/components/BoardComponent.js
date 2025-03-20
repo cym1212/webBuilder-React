@@ -131,65 +131,221 @@ function BoardComponent({ style, data = [] }) {
   }, [boardParameter]);
 
   const defaultStyle = {
-    fontFamily: 'Arial, sans-serif',
+    fontFamily: 'Inter, sans-serif',
     width: '100%',
     height: '100%',
     overflow: 'auto',
-    padding: '10px',
+    padding: '16px',
     backgroundColor: '#ffffff',
+    borderRadius: '8px',
+    boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
     ...style
   };
 
   return (
     <div style={defaultStyle} className="board-component">
-      <h3 style={{ borderBottom: '2px solid #eee', paddingBottom: '10px', marginTop: '0' }}>
+      <h3 style={{ 
+        borderBottom: '1px solid #e2e8f0', 
+        paddingBottom: '12px', 
+        marginTop: '0',
+        fontSize: '1.25rem',
+        fontWeight: '600',
+        color: '#334155',
+        marginBottom: '16px'
+      }}>
         {boardTitle}
-        {boardParameter && <span style={{ fontSize: '0.8em', color: '#666', marginLeft: '10px' }}>
-          (파라미터: {boardParameter})
+        {boardParameter && <span style={{ 
+          fontSize: '0.875rem', 
+          color: '#64748b', 
+          marginLeft: '8px',
+          fontWeight: '400'
+        }}>
+          ({boardParameter})
         </span>}
       </h3>
       
       {loading && (
-        <div style={{ textAlign: 'center', padding: '20px' }}>
-          <div style={{ fontSize: '14px', color: '#666' }}>데이터를 불러오는 중...</div>
+        <div style={{ 
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: '32px',
+          borderRadius: '6px',
+          backgroundColor: '#f8fafc'
+        }}>
+          <div style={{ 
+            width: '18px',
+            height: '18px',
+            borderRadius: '50%',
+            border: '2px solid #e2e8f0',
+            borderTopColor: '#3b82f6',
+            animation: 'spin 0.8s linear infinite'
+          }}></div>
+          <style>{`
+            @keyframes spin {
+              to { transform: rotate(360deg); }
+            }
+          `}</style>
+          <span style={{ marginLeft: '12px', fontSize: '0.875rem', color: '#64748b' }}>
+            데이터를 불러오는 중...
+          </span>
         </div>
       )}
       
       {error && (
-        <div style={{ textAlign: 'center', padding: '20px', color: '#dc3545' }}>
-          <div style={{ fontSize: '14px' }}>
-            API 호출 중 오류가 발생했습니다. 예시 데이터를 표시합니다.
-            <br />
-            <small>파라미터: {boardParameter}</small>
+        <div style={{ 
+          padding: '12px 16px', 
+          borderRadius: '6px', 
+          backgroundColor: '#fee2e2', 
+          color: '#dc2626',
+          display: 'flex',
+          alignItems: 'center',
+          marginBottom: '16px'
+        }}>
+          <svg style={{ width: '16px', height: '16px', marginRight: '8px' }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clipRule="evenodd" />
+          </svg>
+          <div>
+            <div style={{ fontWeight: '500', fontSize: '0.875rem' }}>API 호출 중 오류가 발생했습니다.</div>
+            <div style={{ fontSize: '0.75rem', marginTop: '4px', opacity: '0.8' }}>
+              예시 데이터를 표시합니다. (파라미터: {boardParameter})
+            </div>
           </div>
         </div>
       )}
       
       {!loading && (
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ backgroundColor: '#f8f9fa', borderBottom: '1px solid #dee2e6' }}>
-              <th style={{ padding: '8px', textAlign: 'center' }}>번호</th>
-              <th style={{ padding: '8px', textAlign: 'left' }}>제목</th>
-              <th style={{ padding: '8px', textAlign: 'center' }}>작성자</th>
-              <th style={{ padding: '8px', textAlign: 'center' }}>날짜</th>
-              <th style={{ padding: '8px', textAlign: 'center' }}>조회</th>
-            </tr>
-          </thead>
-          <tbody>
-            {posts.map(post => (
-              <tr key={post.id || post._id || Math.random()} style={{ borderBottom: '1px solid #dee2e6' }}>
-                <td style={{ padding: '8px', textAlign: 'center' }}>{post.id || post._id || '-'}</td>
-                <td style={{ padding: '8px', textAlign: 'left' }}>{post.title || '-'}</td>
-                <td style={{ padding: '8px', textAlign: 'center' }}>{post.author || post.name || '-'}</td>
-                <td style={{ padding: '8px', textAlign: 'center' }}>
-                  {post.date || (post.createdAt ? new Date(post.createdAt).toLocaleDateString() : '-')}
-                </td>
-                <td style={{ padding: '8px', textAlign: 'center' }}>{post.views || post.viewCount || 0}</td>
+        <div style={{ 
+          borderRadius: '6px',
+          overflow: 'hidden',
+          border: '1px solid #e2e8f0'
+        }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ 
+                backgroundColor: '#f8fafc', 
+                borderBottom: '1px solid #e2e8f0'
+              }}>
+                <th style={{ 
+                  padding: '12px', 
+                  textAlign: 'center', 
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  color: '#475569'
+                }}>번호</th>
+                <th style={{ 
+                  padding: '12px', 
+                  textAlign: 'left', 
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  color: '#475569'
+                }}>제목</th>
+                <th style={{ 
+                  padding: '12px', 
+                  textAlign: 'center', 
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  color: '#475569'
+                }}>작성자</th>
+                <th style={{ 
+                  padding: '12px', 
+                  textAlign: 'center', 
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  color: '#475569'
+                }}>날짜</th>
+                <th style={{ 
+                  padding: '12px', 
+                  textAlign: 'center', 
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  color: '#475569'
+                }}>조회</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {posts.map(post => (
+                <tr 
+                  key={post.id || post._id || Math.random()} 
+                  style={{ 
+                    borderBottom: '1px solid #e2e8f0',
+                    transition: 'background-color 0.15s ease'
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f8fafc'}
+                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                >
+                  <td style={{ 
+                    padding: '12px', 
+                    textAlign: 'center',
+                    fontSize: '0.875rem',
+                    color: '#64748b'
+                  }}>{post.id || post._id || '-'}</td>
+                  <td style={{ 
+                    padding: '12px', 
+                    textAlign: 'left',
+                    fontSize: '0.875rem',
+                    fontWeight: '500',
+                    color: '#334155'
+                  }}>{post.title || '-'}</td>
+                  <td style={{ 
+                    padding: '12px', 
+                    textAlign: 'center',
+                    fontSize: '0.875rem',
+                    color: '#64748b'
+                  }}>{post.author || post.name || '-'}</td>
+                  <td style={{ 
+                    padding: '12px', 
+                    textAlign: 'center',
+                    fontSize: '0.875rem',
+                    color: '#64748b'
+                  }}>
+                    {post.date || (post.createdAt ? new Date(post.createdAt).toLocaleDateString() : '-')}
+                  </td>
+                  <td style={{ 
+                    padding: '12px', 
+                    textAlign: 'center',
+                    fontSize: '0.875rem',
+                    color: '#64748b'
+                  }}>
+                    <div style={{ 
+                      display: 'inline-flex', 
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      <svg 
+                        style={{ 
+                          width: '14px', 
+                          height: '14px', 
+                          marginRight: '4px', 
+                          color: '#94a3b8' 
+                        }} 
+                        xmlns="http://www.w3.org/2000/svg" 
+                        viewBox="0 0 20 20" 
+                        fill="currentColor"
+                      >
+                        <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" />
+                        <path fillRule="evenodd" d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41a1.651 1.651 0 010-1.186zM10 15a5 5 0 100-10 5 5 0 000 10z" clipRule="evenodd" />
+                      </svg>
+                      {post.views || post.viewCount || 0}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          
+          {posts.length === 0 && (
+            <div style={{
+              padding: '32px',
+              textAlign: 'center',
+              color: '#64748b',
+              backgroundColor: '#f8fafc',
+              fontSize: '0.875rem'
+            }}>
+              표시할 게시물이 없습니다.
+            </div>
+          )}
+        </div>
       )}
     </div>
   );

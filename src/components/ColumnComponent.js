@@ -184,7 +184,7 @@ const ColumnComponent = ({ content, style, data, children, id, components = [] }
           parentId: id // 부모 ID 설정
         }));
       }
-      return { isDropped: true, parentId: id };
+      return { isDropped: true, parentId: id, type: item.type };
     },
     collect: (monitor) => ({
       isOver: !!monitor.isOver({ shallow: true }),

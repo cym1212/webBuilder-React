@@ -106,22 +106,40 @@ function EditorCanvas() {
         let defaultWidth = '100%';
         let defaultHeight = 50;
         
-        if (item.type === COMPONENT_TYPES.LOGIN) {
-          defaultHeight = 400;
-        } else if (item.type === COMPONENT_TYPES.BOARD) {
-          defaultHeight = 600;
-        } else if (item.type === COMPONENT_TYPES.DETAIL_PAGE) {
-          defaultHeight = 800;
-        } else if (item.type === COMPONENT_TYPES.ROW) {
-          defaultHeight = 100;
-        } else if (item.type === COMPONENT_TYPES.COLUMN) {
-          defaultHeight = 200;
-        } else if (item.type === COMPONENT_TYPES.IMAGE) {
-          defaultHeight = 200;
-        } else if (item.type === COMPONENT_TYPES.CONTAINER) {
-          defaultHeight = 300;
-        } else if (item.type === COMPONENT_TYPES.BUTTON) {
-          defaultHeight = 40;
+        console.log('드롭된 컴포넌트 타입:', item.type); // 디버깅용
+        const componentType = `${item.type}`.toUpperCase();
+        
+        switch(componentType) {
+          case 'TEXT':
+            defaultHeight = 50;
+            break;
+          case 'IMAGE':
+            defaultHeight = 200;
+            break;
+          case 'BUTTON':
+            defaultHeight = 40;
+            break;
+          case 'CONTAINER':
+            defaultHeight = 300;
+            break;
+          case 'ROW':
+            defaultHeight = 100;
+            break;
+          case 'COLUMN':
+            defaultHeight = 200;
+            break;
+          case 'LOGIN':
+            defaultHeight = 400;
+            break;
+          case 'BOARD':
+            defaultHeight = 600;
+            break;
+          case 'DETAIL_PAGE':
+            defaultHeight = 800;
+            break;
+          default:
+            console.warn('알 수 없는 컴포넌트 타입:', componentType);
+            defaultHeight = 50;
         }
 
         // 새 컴포넌트 추가
@@ -142,20 +160,30 @@ function EditorCanvas() {
   }), []);
 
   const getDefaultContent = (type) => {
-    switch(type) {
-      case COMPONENT_TYPES.TEXT:
+    console.log('컨텐츠 생성 타입:', type); // 디버깅용
+    const componentType = `${type}`.toUpperCase();
+    
+    switch(componentType) {
+      case 'TEXT':
         return '텍스트를 입력하세요';
-      case COMPONENT_TYPES.IMAGE:
+      case 'IMAGE':
         return { src: 'https://via.placeholder.com/150', alt: '이미지' };
-      case COMPONENT_TYPES.BUTTON:
+      case 'BUTTON':
         return '버튼';
-      case COMPONENT_TYPES.LOGIN:
-        return '로그인 폼';
-      case COMPONENT_TYPES.ROW:
+      case 'LOGIN':
         return '';
-      case COMPONENT_TYPES.COLUMN:
+      case 'BOARD':
+        return '';
+      case 'DETAIL_PAGE':
+        return '';
+      case 'ROW':
+        return '';
+      case 'COLUMN':
+        return '';
+      case 'CONTAINER':
         return '';
       default:
+        console.warn('알 수 없는 컴포넌트 타입:', componentType);
         return '';
     }
   };

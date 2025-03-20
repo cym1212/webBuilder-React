@@ -8,7 +8,11 @@ import DetailPageComponent from './DetailPageComponent';
 const DraggableComponent = ({ type, name, icon }) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: 'COMPONENT',
-    item: { type },
+    item: { 
+      type: type.toString(),
+      name,
+      componentType: type
+    },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
@@ -19,6 +23,7 @@ const DraggableComponent = ({ type, name, icon }) => {
       ref={drag}
       className="draggable-component"
       style={{ opacity: isDragging ? 0.5 : 1 }}
+      data-component-type={type}
     >
       <div className="component-icon">{icon}</div>
       <div className="component-label">{name}</div>
