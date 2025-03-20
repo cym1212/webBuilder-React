@@ -126,6 +126,47 @@ function PropertyPanel() {
     dispatch(removeComponent(selectedComponent.id));
   };
   
+  const renderPaddingControls = () => {
+    // 모든 컴포넌트에 패딩 컨트롤 렌더링
+    return (
+      <div className="property-group">
+        <div className="property-group-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2" />
+            <path d="M7 7H17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            <path d="M7 12H17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            <path d="M7 17H17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+          여백 설정
+        </div>
+        <div className="padding-controls">
+          <div className="padding-control">
+            <label>좌측 여백</label>
+            <div className="input-with-unit">
+              <input 
+                type="number" 
+                value={parseInt(selectedComponent.style.paddingLeft || '0')} 
+                onChange={(e) => handleStyleChange('paddingLeft', `${e.target.value}px`)}
+              />
+              <span className="unit">px</span>
+            </div>
+          </div>
+          <div className="padding-control">
+            <label>우측 여백</label>
+            <div className="input-with-unit">
+              <input 
+                type="number" 
+                value={parseInt(selectedComponent.style.paddingRight || '0')} 
+                onChange={(e) => handleStyleChange('paddingRight', `${e.target.value}px`)}
+              />
+              <span className="unit">px</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+  
   // 컴포넌트 타입별 속성 편집 UI
   const renderProperties = () => {
     switch(selectedComponent.type) {
@@ -139,6 +180,7 @@ function PropertyPanel() {
                 onChange={(e) => handleContentChange(e.target.value)}
               />
             </div>
+            {renderPaddingControls()}
             <div className="property-group">
               <label>폰트 크기</label>
               <input 
@@ -179,6 +221,7 @@ function PropertyPanel() {
                 onChange={(e) => handleImageChange('src', e.target.value)}
               />
             </div>
+            {renderPaddingControls()}
             <div className="property-group">
               <label>대체 텍스트</label>
               <input 
@@ -201,6 +244,7 @@ function PropertyPanel() {
       case COMPONENT_TYPES.CONTAINER:
         return (
           <>
+            {renderPaddingControls()}
             <div className="property-group">
               <label>배경색</label>
               <SketchPicker 
@@ -238,6 +282,7 @@ function PropertyPanel() {
                 onChange={(e) => handleContentChange(e.target.value)}
               />
             </div>
+            {renderPaddingControls()}
             <div className="property-group">
               <label>배경색</label>
               <SketchPicker 
@@ -266,6 +311,7 @@ function PropertyPanel() {
       case COMPONENT_TYPES.LOGIN:
         return (
           <>
+            {renderPaddingControls()}
             <div className="property-group">
               <label>배경색</label>
               <SketchPicker 
@@ -326,6 +372,7 @@ function PropertyPanel() {
         
         return (
           <>
+            {renderPaddingControls()}
             <div className="property-group">
               <label>배경색</label>
               <SketchPicker 
@@ -397,6 +444,7 @@ function PropertyPanel() {
       case COMPONENT_TYPES.DETAIL_PAGE:
         return (
           <>
+            {renderPaddingControls()}
             <div className="property-group">
               <label>배경색</label>
               <SketchPicker 

@@ -184,6 +184,8 @@ body {
   cursor: move;
   transition: all 0.2s ease;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  position: relative;
 }
 
 .draggable-component:hover {
@@ -767,4 +769,66 @@ body {
   background-color: #e2e8f0;
   transform: translateY(-1px);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 패딩 컨트롤 스타일 */
+.padding-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.padding-control {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.padding-control label {
+  font-size: 0.85rem;
+  color: #475569;
+}
+
+.input-with-unit {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-with-unit input {
+  width: 100%;
+  padding-right: 30px;
+}
+
+.input-with-unit .unit {
+  position: absolute;
+  right: 10px;
+  color: #94a3b8;
+  font-size: 0.8rem;
+}
+
+/* 가로 100% 화면에 적용되는 스타일 */
+.draggable-component {
+  width: 100%;
+  position: relative;
+}
+
+/* 기타 스타일 */
+.property-panel input[type="number"] {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.property-panel textarea {
+  width: 100%;
+  min-height: 60px;
+  padding: 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  resize: vertical;
 }

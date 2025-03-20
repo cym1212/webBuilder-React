@@ -141,25 +141,32 @@ function EditorCanvas() {
         }));
       } else {
         // 컴포넌트 타입에 따른 기본 크기 설정
-        let defaultWidth = 150;
+        let defaultWidth = '100%';
         let defaultHeight = 50;
         
         if (item.type === COMPONENT_TYPES.LOGIN) {
-          defaultWidth = 300;
-          defaultHeight = 300;
+          defaultHeight = 400;
+        } else if (item.type === COMPONENT_TYPES.BOARD) {
+          defaultHeight = 600;
+        } else if (item.type === COMPONENT_TYPES.DETAIL_PAGE) {
+          defaultHeight = 800;
         } else if (item.type === COMPONENT_TYPES.ROW) {
-          defaultWidth = 600;
           defaultHeight = 100;
         } else if (item.type === COMPONENT_TYPES.COLUMN) {
-          defaultWidth = 200;
           defaultHeight = 200;
+        } else if (item.type === COMPONENT_TYPES.IMAGE) {
+          defaultHeight = 200;
+        } else if (item.type === COMPONENT_TYPES.CONTAINER) {
+          defaultHeight = 300;
+        } else if (item.type === COMPONENT_TYPES.BUTTON) {
+          defaultHeight = 40;
         }
 
         // 새 컴포넌트 추가
         dispatch(addComponent({
           id: uuidv4(),
           type: item.type,
-          position: { x, y },
+          position: { x: 0, y }, // x를 0으로 설정하여 왼쪽부터 시작하도록 함
           size: { width: defaultWidth, height: defaultHeight },
           style: {},
           content: getDefaultContent(item.type),

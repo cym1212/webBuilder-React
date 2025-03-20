@@ -16,15 +16,15 @@ const initialState = {
 
 // 컴포넌트 타입별 기본 크기 설정
 const defaultComponentSizes = {
-  [COMPONENT_TYPES.TEXT]: { width: 200, height: 50 },
-  [COMPONENT_TYPES.IMAGE]: { width: 300, height: 200 },
-  [COMPONENT_TYPES.CONTAINER]: { width: 400, height: 300 },
-  [COMPONENT_TYPES.BUTTON]: { width: 120, height: 40 },
-  [COMPONENT_TYPES.LOGIN]: { width: 1200, height: 800 },
-  [COMPONENT_TYPES.BOARD]: { width: 1800, height: 1200 },
-  [COMPONENT_TYPES.DETAIL_PAGE]: { width: 1800, height: 1600 },
-  [COMPONENT_TYPES.ROW]: { width: 600, height: 100 },
-  [COMPONENT_TYPES.COLUMN]: { width: 200, height: 200 },
+  [COMPONENT_TYPES.TEXT]: { width: '100%', height: 50 },
+  [COMPONENT_TYPES.IMAGE]: { width: '100%', height: 200 },
+  [COMPONENT_TYPES.CONTAINER]: { width: '100%', height: 300 },
+  [COMPONENT_TYPES.BUTTON]: { width: '100%', height: 40 },
+  [COMPONENT_TYPES.LOGIN]: { width: '100%', height: 400 },
+  [COMPONENT_TYPES.BOARD]: { width: '100%', height: 600 },
+  [COMPONENT_TYPES.DETAIL_PAGE]: { width: '100%', height: 800 },
+  [COMPONENT_TYPES.ROW]: { width: '100%', height: 100 },
+  [COMPONENT_TYPES.COLUMN]: { width: '100%', height: 200 },
 };
 
 // 컴포넌트 타입별 기본 데이터 구조
@@ -67,16 +67,22 @@ const defaultComponentStyles = {
   [COMPONENT_TYPES.TEXT]: { 
     color: '#000000', 
     fontSize: '16px', 
-    fontWeight: 'normal' 
+    fontWeight: 'normal',
+    paddingLeft: '0px',
+    paddingRight: '0px' 
   },
   [COMPONENT_TYPES.IMAGE]: { 
     border: 'none', 
-    borderRadius: '0px' 
+    borderRadius: '0px',
+    paddingLeft: '0px',
+    paddingRight: '0px' 
   },
   [COMPONENT_TYPES.CONTAINER]: { 
     backgroundColor: '#f8f9fa', 
     border: '1px solid #dee2e6', 
-    borderRadius: '4px' 
+    borderRadius: '4px',
+    paddingLeft: '0px',
+    paddingRight: '0px' 
   },
   [COMPONENT_TYPES.BUTTON]: { 
     backgroundColor: '#4a90e2', 
@@ -84,33 +90,45 @@ const defaultComponentStyles = {
     border: 'none', 
     borderRadius: '4px', 
     padding: '8px 16px', 
-    fontSize: '14px' 
+    fontSize: '14px',
+    paddingLeft: '20px',
+    paddingRight: '20px' 
   },
   [COMPONENT_TYPES.LOGIN]: { 
     backgroundColor: '#f8f9fa', 
     borderRadius: '8px', 
     boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)', 
     padding: '20px',
-    buttonColor: '#4a90e2'
+    buttonColor: '#4a90e2',
+    paddingLeft: '20px',
+    paddingRight: '20px'
   },
   [COMPONENT_TYPES.BOARD]: { 
     backgroundColor: '#ffffff', 
     borderRadius: '8px', 
     boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)', 
-    padding: '20px' 
+    padding: '20px',
+    paddingLeft: '20px',
+    paddingRight: '20px'
   },
   [COMPONENT_TYPES.DETAIL_PAGE]: { 
     backgroundColor: '#ffffff', 
     borderRadius: '8px', 
     boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)', 
     padding: '20px',
-    buttonColor: '#4a90e2'
+    buttonColor: '#4a90e2',
+    paddingLeft: '20px',
+    paddingRight: '20px'
   },
   [COMPONENT_TYPES.ROW]: {
-    backgroundColor: 'transparent'
+    backgroundColor: 'transparent',
+    paddingLeft: '0px',
+    paddingRight: '0px'
   },
   [COMPONENT_TYPES.COLUMN]: {
-    backgroundColor: 'transparent'
+    backgroundColor: 'transparent',
+    paddingLeft: '0px',
+    paddingRight: '0px'
   }
 };
 

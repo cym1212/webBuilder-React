@@ -137,11 +137,10 @@ function ComponentRenderer({ component }) {
     // 방향에 따른 크기 및 위치 조정
     switch (resizeDirection) {
       case 'e':
-        newWidth = startSize.width + deltaX;
+        // width는 100%로 고정, paddingRight 조정
         break;
       case 'w':
-        newWidth = startSize.width - deltaX;
-        newX = component.position.x + deltaX;
+        // width는 100%로 고정, paddingLeft 조정
         break;
       case 's':
         newHeight = startSize.height + deltaY;
@@ -151,22 +150,20 @@ function ComponentRenderer({ component }) {
         newY = component.position.y + deltaY;
         break;
       case 'se':
-        newWidth = startSize.width + deltaX;
+        // width는 100%로 고정
         newHeight = startSize.height + deltaY;
         break;
       case 'sw':
-        newWidth = startSize.width - deltaX;
-        newX = component.position.x + deltaX;
+        // width는 100%로 고정
         newHeight = startSize.height + deltaY;
         break;
       case 'ne':
-        newWidth = startSize.width + deltaX;
+        // width는 100%로 고정
         newHeight = startSize.height - deltaY;
         newY = component.position.y + deltaY;
         break;
       case 'nw':
-        newWidth = startSize.width - deltaX;
-        newX = component.position.x + deltaX;
+        // width는 100%로 고정
         newHeight = startSize.height - deltaY;
         newY = component.position.y + deltaY;
         break;
@@ -175,7 +172,6 @@ function ComponentRenderer({ component }) {
     }
     
     // 최소 크기 제한
-    newWidth = Math.max(20, newWidth);
     newHeight = Math.max(20, newHeight);
     
     // 부모 컴포넌트 크기 제한 적용
@@ -183,18 +179,9 @@ function ComponentRenderer({ component }) {
       const parentDimensions = getParentDimensions();
       if (parentDimensions) {
         // 부모 컴포넌트의 크기와 현재 컴포넌트의 위치를 고려하여 최대 크기 계산
-        const maxWidth = parentDimensions.width - newX;
         const maxHeight = parentDimensions.height - newY;
         
         // 부모 컴포넌트 영역을 넘지 않도록 제한
-        if (newWidth > maxWidth) {
-          newWidth = maxWidth;
-          // 왼쪽으로 리사이즈할 때 위치 조정
-          if (resizeDirection.includes('w')) {
-            newX = component.position.x + (startSize.width - newWidth);
-          }
-        }
-        
         if (newHeight > maxHeight) {
           newHeight = maxHeight;
           // 위로 리사이즈할 때 위치 조정
@@ -209,8 +196,8 @@ function ComponentRenderer({ component }) {
     dispatch(updateComponent({
       id: component.id,
       changes: {
-        size: { width: newWidth, height: newHeight },
-        position: { x: newX, y: newY }
+        size: { width: '100%', height: newHeight },
+        position: { x: 0, y: newY }
       }
     }));
   };
@@ -332,13 +319,15 @@ function ComponentRenderer({ component }) {
       position: 'absolute',
       left: `${component.position.x}px`,
       top: `${component.position.y}px`,
-      width: `${component.size.width}px`,
+      width: component.size.width,
       height: `${component.size.height}px`,
-      cursor: resizing ? 'auto' : 'move',
       opacity: isDragging ? 0.5 : 1,
-      border: component.isSelected ? '1px dashed #007bff' : '1px dashed #ccc',
+      border: component.isSelected ? '2px solid #007bff' : 'none',
       boxSizing: 'border-box',
-      zIndex: component.isSelected ? 100 : 1
+      paddingLeft: component.style.paddingLeft || '0px',
+      paddingRight: component.style.paddingRight || '0px',
+      transition: 'padding 0.2s ease',
+      ...component.style
     };
   }
   
