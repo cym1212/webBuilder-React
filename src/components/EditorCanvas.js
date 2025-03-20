@@ -55,45 +55,6 @@ function EditorCanvas() {
 
   const mainContentHeight = calculateMainContentHeight();
 
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      if (!selectedComponentId) return;
-
-      const selectedComponent = components.find(comp => comp.id === selectedComponentId);
-      if (!selectedComponent) return;
-
-      // 부모 컴포넌트가 있으면 키보드 조작 무시 (부모 내부에서의 위치는 별도 처리 필요)
-      if (selectedComponent.parentId) return;
-
-      let { x, y } = selectedComponent.position;
-      const step = 10;  // 이동 간격 (10px)
-
-      switch (event.key) {
-        case 'ArrowUp':
-          y = Math.max(0, y - step);
-          break;
-        case 'ArrowDown':
-          y = Math.min(mainContentHeight - selectedComponent.size.height, y + step);
-          break;
-        case 'ArrowLeft':
-          x = Math.max(0, x - step);
-          break;
-        case 'ArrowRight':
-          x = Math.min(1200 - selectedComponent.size.width, x + step);
-          break;
-        default:
-          return;
-      }
-
-      dispatch(updateComponentPosition({ id: selectedComponentId, newPosition: { x, y } }));
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [dispatch, selectedComponentId, components, mainContentHeight]);
-
   const [{ isOver }, drop] = useDrop(() => ({
     accept: 'COMPONENT',
     drop: (item, monitor) => {
@@ -136,8 +97,9 @@ function EditorCanvas() {
       if (item.id) {
         dispatch(updateComponentPosition({ 
           id: item.id, 
-          newPosition: { x, y },
-          parentId: null  // 부모 제거 (최상위로 이동)
+          newPosition: { x: 0, y }, // x를 항상 0으로 설정
+          parentId: null,  // 부모 제거 (최상위로 이동)
+          size: { width: '100%', height: undefined } // 너비를 항상 100%로 설정
         }));
       } else {
         // 컴포넌트 타입에 따른 기본 크기 설정

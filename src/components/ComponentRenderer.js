@@ -129,19 +129,37 @@ function ComponentRenderer({ component }) {
     
     const deltaX = e.clientX - startPos.x;
     const deltaY = e.clientY - startPos.y;
-    let newWidth = startSize.width;
+    let newWidth = '100%'; // 항상 width를 100%로 설정
     let newHeight = startSize.height;
-    let newX = component.position.x;
+    let newX = 0; // x 좌표는 항상 0
     let newY = component.position.y;
     
     // 방향에 따른 크기 및 위치 조정
     switch (resizeDirection) {
       case 'e':
         // width는 100%로 고정, paddingRight 조정
-        break;
+        dispatch(updateComponent({
+          id: component.id,
+          changes: {
+            style: {
+              ...component.style,
+              paddingRight: Math.max(0, parseInt(component.style.paddingRight || '0') - Math.floor(deltaX)) + 'px'
+            }
+          }
+        }));
+        return;
       case 'w':
         // width는 100%로 고정, paddingLeft 조정
-        break;
+        dispatch(updateComponent({
+          id: component.id,
+          changes: {
+            style: {
+              ...component.style,
+              paddingLeft: Math.max(0, parseInt(component.style.paddingLeft || '0') + Math.floor(deltaX)) + 'px'
+            }
+          }
+        }));
+        return;
       case 's':
         newHeight = startSize.height + deltaY;
         break;
@@ -150,22 +168,58 @@ function ComponentRenderer({ component }) {
         newY = component.position.y + deltaY;
         break;
       case 'se':
-        // width는 100%로 고정
+        // width는 100%로 고정, 높이만 조정
         newHeight = startSize.height + deltaY;
+        dispatch(updateComponent({
+          id: component.id,
+          changes: {
+            style: {
+              ...component.style,
+              paddingRight: Math.max(0, parseInt(component.style.paddingRight || '0') - Math.floor(deltaX)) + 'px'
+            }
+          }
+        }));
         break;
       case 'sw':
-        // width는 100%로 고정
+        // width는 100%로 고정, 높이만 조정
         newHeight = startSize.height + deltaY;
+        dispatch(updateComponent({
+          id: component.id,
+          changes: {
+            style: {
+              ...component.style,
+              paddingLeft: Math.max(0, parseInt(component.style.paddingLeft || '0') + Math.floor(deltaX)) + 'px'
+            }
+          }
+        }));
         break;
       case 'ne':
-        // width는 100%로 고정
+        // width는 100%로 고정, 높이만 조정
         newHeight = startSize.height - deltaY;
         newY = component.position.y + deltaY;
+        dispatch(updateComponent({
+          id: component.id,
+          changes: {
+            style: {
+              ...component.style,
+              paddingRight: Math.max(0, parseInt(component.style.paddingRight || '0') - Math.floor(deltaX)) + 'px'
+            }
+          }
+        }));
         break;
       case 'nw':
-        // width는 100%로 고정
+        // width는 100%로 고정, 높이만 조정
         newHeight = startSize.height - deltaY;
         newY = component.position.y + deltaY;
+        dispatch(updateComponent({
+          id: component.id,
+          changes: {
+            style: {
+              ...component.style,
+              paddingLeft: Math.max(0, parseInt(component.style.paddingLeft || '0') + Math.floor(deltaX)) + 'px'
+            }
+          }
+        }));
         break;
       default:
         break;
@@ -192,14 +246,16 @@ function ComponentRenderer({ component }) {
       }
     }
     
-    // 크기와 위치 업데이트
-    dispatch(updateComponent({
-      id: component.id,
-      changes: {
-        size: { width: '100%', height: newHeight },
-        position: { x: 0, y: newY }
-      }
-    }));
+    // 높이만 업데이트
+    if (resizeDirection.includes('n') || resizeDirection.includes('s')) {
+      dispatch(updateComponent({
+        id: component.id,
+        changes: {
+          size: { width: '100%', height: newHeight },
+          position: { x: 0, y: newY }
+        }
+      }));
+    }
   };
   
   // 리사이즈 종료 핸들러
@@ -225,11 +281,11 @@ function ComponentRenderer({ component }) {
       case COMPONENT_TYPES.TEXT:
         return <TextComponent content={component.content} style={component.style} />;
       case COMPONENT_TYPES.IMAGE:
-        return <ImageComponent src={component.content.src} alt={component.content.alt} style={component.style} />;
+        return <ImageComponent src={component.content.src || ''} alt={component.content.alt || ''} style={component.style} />;
       case COMPONENT_TYPES.CONTAINER:
         return <ContainerComponent style={component.style} />;
       case COMPONENT_TYPES.BUTTON:
-        return <ButtonComponent content={component.content} style={component.style} />;
+        return <ButtonComponent content={component.content || '버튼'} style={component.style} />;
       case COMPONENT_TYPES.LOGIN:
         return <LoginForm style={component.style} />;
       case COMPONENT_TYPES.BOARD:
@@ -257,13 +313,15 @@ function ComponentRenderer({ component }) {
           />
         );
       default:
-        return null;
+        return <div>알 수 없는 컴포넌트 타입: {component.type}</div>;
     }
   };
   
-  // Row나 Column이 다른 Row나 Column의 하위에 있을 때 포지션을 absolute로 설정하지 않도록 처리
+  // 그리드 컴포넌트 여부 확인 (Row 또는 Column)
   const isGridComponent = component.type === COMPONENT_TYPES.ROW || component.type === COMPONENT_TYPES.COLUMN;
-  const isChildOfGridComponent = component.parentId !== undefined && component.parentId !== null;
+  
+  // 부모가 그리드 컴포넌트인지 확인
+  const isChildOfGridComponent = parentComponent && (parentComponent.type === COMPONENT_TYPES.ROW || parentComponent.type === COMPONENT_TYPES.COLUMN);
   
   // 그리드 내부 자식 컴포넌트의 스타일 조정
   let componentStyle;
@@ -273,53 +331,66 @@ function ComponentRenderer({ component }) {
     componentStyle = {
       cursor: resizing ? 'auto' : 'move',
       opacity: isDragging ? 0.5 : 1,
-      border: component.isSelected ? '1px dashed #007bff' : '1px dashed #ccc',
+      border: component.isSelected ? '2px solid #007bff' : '1px dashed #ccc',
       boxSizing: 'border-box',
       margin: '0',
       position: 'absolute',
-      width: `${component.size.width}px`,
+      width: '100%', // 항상 100% 너비 보장
       height: `${component.size.height}px`,
-      left: `${component.position.x}px`,
+      left: '0', // x 좌표는 항상 0
       top: `${component.position.y}px`,
-      zIndex: component.isSelected ? 100 : 1
+      zIndex: component.isSelected ? 100 : 1,
+      paddingLeft: component.style.paddingLeft || '0px',
+      paddingRight: component.style.paddingRight || '0px',
+      ...component.style
     };
   } else if (isGridComponent) {
     // 최상위 그리드 컴포넌트 - 크기 조절 가능
     componentStyle = {
-      cursor: resizing ? 'auto' : 'move',
+      cursor: 'default',
       opacity: isDragging ? 0.5 : 1,
-      border: component.isSelected ? '1px dashed #007bff' : '1px dashed #ccc',
+      border: component.isSelected ? '2px solid #007bff' : '1px solid #e2e8f0',
       boxSizing: 'border-box',
       margin: '0',
       position: 'absolute',
-      width: `${component.size.width}px`,
+      width: '100%', // 항상 100% 너비 보장
       height: `${component.size.height}px`,
-      left: `${component.position.x}px`,
+      left: '0', // x 좌표는 항상 0
       top: `${component.position.y}px`,
-      zIndex: component.isSelected ? 100 : 1
+      zIndex: component.isSelected ? 100 : 1,
+      backgroundColor: component.type === COMPONENT_TYPES.ROW 
+        ? 'rgba(247, 250, 252, 0.5)' 
+        : 'rgba(237, 242, 247, 0.5)',
+      borderRadius: '4px',
+      paddingLeft: component.style.paddingLeft || '20px',
+      paddingRight: component.style.paddingRight || '20px',
+      ...component.style
     };
   } else if (isChildOfGridComponent) {
     // 그리드 내부의 일반 컴포넌트 - 자유 배치
     componentStyle = {
       position: 'absolute',
-      left: `${component.position.x}px`,
+      left: '0', // x 좌표는 항상 0
       top: `${component.position.y}px`,
-      width: `${component.size.width}px`,
+      width: '100%', // 항상 100% 너비 보장
       height: `${component.size.height}px`,
       margin: '0',
-      cursor: resizing ? 'auto' : 'move',
+      cursor: 'default',
       opacity: isDragging ? 0.5 : 1,
-      border: component.isSelected ? '1px dashed #007bff' : '1px dashed #ccc',
+      border: component.isSelected ? '2px solid #007bff' : '1px dashed #ccc',
       boxSizing: 'border-box',
-      zIndex: component.isSelected ? 100 : 1
+      zIndex: component.isSelected ? 100 : 1,
+      paddingLeft: component.style.paddingLeft || '0px',
+      paddingRight: component.style.paddingRight || '0px',
+      ...component.style
     };
   } else {
     // 최상위 컴포넌트 - 가로 세로 크기 조절 모두 가능
     componentStyle = {
       position: 'absolute',
-      left: `${component.position.x}px`,
+      left: '0', // x 좌표는 항상 0
       top: `${component.position.y}px`,
-      width: component.size.width,
+      width: '100%', // 항상 100% 너비 보장
       height: `${component.size.height}px`,
       opacity: isDragging ? 0.5 : 1,
       border: component.isSelected ? '2px solid #007bff' : 'none',

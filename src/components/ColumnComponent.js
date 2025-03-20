@@ -27,7 +27,12 @@ const ColumnComponent = ({ content, style, data, children, id, components = [] }
     boxSizing: 'border-box',
     display: 'flex',
     flexDirection: 'column',
-    overflow: 'hidden',
+    overflow: 'visible',
+    backgroundColor: style.backgroundColor || 'rgba(237, 242, 247, 0.5)',
+    border: style.border || '1px solid #e2e8f0',
+    borderRadius: style.borderRadius || '4px',
+    paddingLeft: style.paddingLeft || '20px',
+    paddingRight: style.paddingRight || '20px',
     ...style
   };
 
@@ -146,29 +151,33 @@ const ColumnComponent = ({ content, style, data, children, id, components = [] }
           
           dispatch(updateComponentPosition({ 
             id: item.id, 
-            newPosition: { x, y },
+            newPosition: { x: 0, y }, // x를 항상 0으로 설정
             parentId: id, // 부모 ID 설정
-            size: { width: newWidth, height: newHeight } // 크기 제한
+            size: { width: '100%', height: newHeight } // 너비를 항상 100%로 설정
           }));
         }
       } else {
         // 새 컴포넌트 추가
-        let newWidth = Math.min(150, colRect.width - x);
-        let newHeight = Math.min(50, colRect.height - y);
+        let newWidth = '100%';
+        let newHeight = 50;
         
         // 타입에 따른 기본 크기 설정 (부모 영역 제한)
         if (item.type === COMPONENT_TYPES.COLUMN) {
-          newWidth = Math.min(200, colRect.width - x);
-          newHeight = Math.min(200, colRect.height - y);
+          newHeight = 200;
         } else if (item.type === COMPONENT_TYPES.ROW) {
-          newWidth = Math.min(400, colRect.width - x);
-          newHeight = Math.min(100, colRect.height - y);
+          newHeight = 100;
+        } else if (item.type === COMPONENT_TYPES.BUTTON) {
+          newHeight = 40;
+        } else if (item.type === COMPONENT_TYPES.IMAGE) {
+          newHeight = 200;
+        } else if (item.type === COMPONENT_TYPES.LOGIN) {
+          newHeight = 400;
         }
         
         dispatch(addComponent({
           id: uuidv4(),
           type: item.type,
-          position: { x, y },
+          position: { x: 0, y }, // x를 항상 0으로 설정
           size: { width: newWidth, height: newHeight },
           style: {},
           content: '',
@@ -191,10 +200,13 @@ const ColumnComponent = ({ content, style, data, children, id, components = [] }
       ref={drop}
       className={containerClass} 
       style={mergedStyle}
+      data-component-type="COLUMN"
     >
       {/* 자식이 없을 때 안내 메시지 표시 */}
       {childComponents.length === 0 && (
-        <div className="component-placeholder-column">여기에 컴포넌트를 끌어다 놓으세요</div>
+        <div className="component-placeholder-column" style={{ width: '100%', textAlign: 'center', padding: '20px 0' }}>
+          여기에 컴포넌트를 끌어다 놓으세요
+        </div>
       )}
 
       {/* Column에 배정된 자식 컴포넌트 렌더링 */}

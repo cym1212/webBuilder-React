@@ -252,7 +252,11 @@ export const editorSlice = createSlice({
       const { id, newPosition, parentId, size } = action.payload;
       const component = state.components.find(comp => comp.id === id);
       if (component) {
-        component.position = newPosition;
+        // 항상 x 위치를 0으로 설정하여 가로로 전체 너비를 사용할 수 있게 함
+        component.position = {
+          x: 0,
+          y: newPosition.y
+        };
         
         // parentId가 지정되었다면 업데이트 (부모 컴포넌트 변경)
         if (parentId !== undefined) {
@@ -261,7 +265,16 @@ export const editorSlice = createSlice({
         
         // size가 지정되었다면 컴포넌트 크기 업데이트
         if (size) {
-          component.size = size;
+          component.size = {
+            width: '100%',  // 항상 width를 100%로 설정
+            height: size.height
+          };
+        } else {
+          // size를 지정하지 않았더라도 width는 100%로 설정
+          component.size = {
+            width: '100%',
+            height: component.size.height
+          };
         }
       }
     },
