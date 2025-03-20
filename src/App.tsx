@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Provider, useDispatch } from 'react-redux';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -24,7 +24,13 @@ function AppContent() {
     <DndProvider backend={HTML5Backend}>  
       <div className="app-container">
         <header className="app-header">
-          <h1>웹 빌더</h1>
+          <div className="header-logo">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M14 6L8 12L14 18" stroke="#4361ee" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M18 6L12 12L18 18" stroke="#4361ee" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <h1>웹 빌더</h1>
+          </div>
           <div className="header-actions">
             <ProjectManager />
             <ProjectImportExport />
