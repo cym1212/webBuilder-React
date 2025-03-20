@@ -769,7 +769,8 @@ body {
 .padding-controls {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
+  grid-template-rows: repeat(2, auto);
+  gap: 10px;
   margin-bottom: 12px;
 }
 
@@ -781,6 +782,7 @@ body {
 .padding-control label {
   font-size: 0.75rem;
   margin-bottom: 4px;
+  color: #64748b;
 }
 
 .input-with-unit {

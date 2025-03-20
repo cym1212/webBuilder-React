@@ -26,6 +26,8 @@ const RowComponent = ({ content, style, data, children, id, components = [] }) =
     borderRadius: style.borderRadius || '4px',
     paddingLeft: style.paddingLeft || '20px',
     paddingRight: style.paddingRight || '20px',
+    paddingTop: style.paddingTop || '10px',
+    paddingBottom: style.paddingBottom || '10px',
     ...style
   };
 

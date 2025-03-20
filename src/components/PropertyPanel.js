@@ -141,12 +141,12 @@ function PropertyPanel() {
         </div>
         <div className="padding-controls">
           <div className="padding-control">
-            <label>좌측 여백</label>
+            <label>상단 여백</label>
             <div className="input-with-unit">
               <input 
                 type="number" 
-                value={parseInt(selectedComponent.style.paddingLeft || '0')} 
-                onChange={(e) => handleStyleChange('paddingLeft', `${e.target.value}px`)}
+                value={parseInt(selectedComponent.style.paddingTop || '0')} 
+                onChange={(e) => handleStyleChange('paddingTop', `${e.target.value}px`)}
               />
               <span className="unit">px</span>
             </div>
@@ -158,6 +158,28 @@ function PropertyPanel() {
                 type="number" 
                 value={parseInt(selectedComponent.style.paddingRight || '0')} 
                 onChange={(e) => handleStyleChange('paddingRight', `${e.target.value}px`)}
+              />
+              <span className="unit">px</span>
+            </div>
+          </div>
+          <div className="padding-control">
+            <label>하단 여백</label>
+            <div className="input-with-unit">
+              <input 
+                type="number" 
+                value={parseInt(selectedComponent.style.paddingBottom || '0')} 
+                onChange={(e) => handleStyleChange('paddingBottom', `${e.target.value}px`)}
+              />
+              <span className="unit">px</span>
+            </div>
+          </div>
+          <div className="padding-control">
+            <label>좌측 여백</label>
+            <div className="input-with-unit">
+              <input 
+                type="number" 
+                value={parseInt(selectedComponent.style.paddingLeft || '0')} 
+                onChange={(e) => handleStyleChange('paddingLeft', `${e.target.value}px`)}
               />
               <span className="unit">px</span>
             </div>
