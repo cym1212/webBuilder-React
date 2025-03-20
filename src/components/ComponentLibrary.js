@@ -100,6 +100,13 @@ const NavButtons = ({ activeTab, setActiveTab }) => {
       >
         <i className="nav-icon">⚙️</i>
       </button>
+      <button 
+        className={activeTab === 'menutree' ? "nav-button active" : "nav-button"} 
+        onClick={() => setActiveTab('menutree')}
+        title="메뉴 트리"
+      >
+        <i className="nav-icon">🗂️</i>
+      </button>
     </div>
   );
 };
@@ -181,6 +188,39 @@ function ComponentLibrary() {
     </>
   );
 
+  // 메뉴트리 탭
+  const renderMenuTree = () => (
+    <div className="menu-tree">
+      <h4 className="components-category-title">메뉴 구조</h4>
+      <div className="menu-tree-container">
+        <div className="menu-item root-menu">
+          <span className="menu-icon">📁</span>
+          <span className="menu-name">메인 메뉴</span>
+        </div>
+        <div className="menu-item sub-menu">
+          <span className="menu-icon">📄</span>
+          <span className="menu-name">홈</span>
+        </div>
+        <div className="menu-item sub-menu">
+          <span className="menu-icon">📄</span>
+          <span className="menu-name">소개</span>
+        </div>
+        <div className="menu-item sub-menu">
+          <span className="menu-icon">📄</span>
+          <span className="menu-name">서비스</span>
+        </div>
+        <div className="menu-item sub-menu">
+          <span className="menu-icon">📄</span>
+          <span className="menu-name">연락처</span>
+        </div>
+      </div>
+      <div className="menu-actions">
+        <button className="btn btn-primary btn-sm">메뉴 추가</button>
+        <button className="btn btn-secondary btn-sm">순서 변경</button>
+      </div>
+    </div>
+  );
+
   const renderActiveTabContent = () => {
     switch(activeTab) {
       case 'basic':
@@ -189,6 +229,8 @@ function ComponentLibrary() {
         return renderLayoutComponents();
       case 'advanced':
         return renderAdvancedComponents();
+      case 'menutree':
+        return renderMenuTree();
       default:
         return renderBasicComponents();
     }
