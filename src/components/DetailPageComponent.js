@@ -47,7 +47,6 @@ function DetailPageComponent({ style, data = {} }) {
       try {
         // 유효한 API URL이 있는 경우에만 호출
         if (apiUrl) {
-          console.log('상품 API 호출:', apiUrl);
           const response = await fetch(apiUrl);
           
           if (!response.ok) {
@@ -55,13 +54,11 @@ function DetailPageComponent({ style, data = {} }) {
           }
           
           const responseData = await response.json();
-          console.log('상품 API 응답:', responseData);
           
           // 응답 데이터 처리
           setProduct(responseData);
         } else {
           // API URL이 없는 경우 기본 데이터 사용
-          console.log('상품 ID가 없어 기본 데이터 사용');
           setProduct(defaultData);
         }
         

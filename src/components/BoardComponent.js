@@ -86,7 +86,6 @@ function BoardComponent({ style, data = [] }) {
       try {
         // 유효한 API URL이 있는 경우에만 호출
         if (apiUrl) {
-          console.log('API 호출:', apiUrl);
           const response = await fetch(apiUrl);
           
           if (!response.ok) {
@@ -94,7 +93,6 @@ function BoardComponent({ style, data = [] }) {
           }
           
           const responseData = await response.json();
-          console.log('API 응답:', responseData);
           
           // 응답 데이터 처리 (content 필드가 있으면 그것을 사용, 없으면 전체 응답을 사용)
           const data = responseData.content || responseData;

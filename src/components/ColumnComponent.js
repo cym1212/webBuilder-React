@@ -110,13 +110,9 @@ const ColumnComponent = ({ content, style, data, children, id, components = [] }
         return;
       }
       
-      // 디버깅용 로그 추가
-      console.log('컬럼에 드롭된 아이템 원본:', item);
-      
       // 직접 컴포넌트 타입 확인 + 카테고리 확인
       const dropComponentType = item.type;
       const category = item.category || 'unknown';
-      console.log('드롭 컴포넌트 타입 확인:', { dropComponentType, category, itemObj: item });
       
       const offset = monitor.getClientOffset();
       if (!offset) return;
@@ -171,7 +167,6 @@ const ColumnComponent = ({ content, style, data, children, id, components = [] }
         
         // 정확한 컴포넌트 타입 결정
         const newCompType = dropComponentType;
-        console.log('새 컴포넌트 타입:', { newCompType, itemObj: item });
         
         // 직접 COMPONENT_TYPES와 비교
         switch(newCompType) {

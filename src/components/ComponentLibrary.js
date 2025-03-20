@@ -6,7 +6,6 @@ import BoardComponent from './BoardComponent';
 import DetailPageComponent from './DetailPageComponent';
 
 const DraggableComponent = ({ type, name, icon, category }) => {
-  console.log('드래그할 컴포넌트 생성:', { type, name, category }); // 디버깅 로그
 
   // 컴포넌트 타입이 문자열인지 확인
   const typeStr = typeof type === 'string' ? type : String(type);
@@ -15,7 +14,6 @@ const DraggableComponent = ({ type, name, icon, category }) => {
     type: 'COMPONENT',
     item: () => {
       // 드래그 시작할 때 호출되는 함수
-      console.log('드래그 시작:', { type, name, typeStr, category });
       
       return { 
         id: null, // 신규 컴포넌트임을 나타내는 null ID

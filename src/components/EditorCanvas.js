@@ -63,13 +63,10 @@ function EditorCanvas() {
         return;
       }
       
-      // 디버깅용 로그 추가
-      console.log('캔버스에 드롭된 아이템 원본:', item);
       
       // 직접 컴포넌트 타입 확인 + 카테고리 확인
       const dropComponentType = item.type;
       const category = item.category || 'unknown';
-      console.log('드롭 컴포넌트 타입 확인:', { dropComponentType, category, itemObj: item });
       
       const offset = monitor.getClientOffset();
       if (!offset) return; 
@@ -116,7 +113,6 @@ function EditorCanvas() {
         
         // 정확한 컴포넌트 타입 결정
         const newCompType = dropComponentType;
-        console.log('새 컴포넌트 타입:', { newCompType, itemObj: item });
         
         switch(newCompType) {
           case COMPONENT_TYPES.TEXT:
@@ -172,7 +168,6 @@ function EditorCanvas() {
   }), []);
 
   const getDefaultContent = (type) => {
-    console.log('컨텐츠 생성용 타입:', type); // 디버깅용
     
     // COMPONENT_TYPES와 직접 비교
     switch(type) {

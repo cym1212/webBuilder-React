@@ -688,12 +688,8 @@ const generateMainJS = (components) => {
           boardItems = component.data.items || [];
           boardTitle = component.data.title || '게시판';
           boardParameter = component.data.parameter || '';
-          console.log('게시판 데이터:', component.data); // 디버깅용
         }
         
-        // 보드 컴포넌트 HTML 생성 - 변수 값 확인을 위한 로그 추가
-        console.log('사용되는 제목:', boardTitle);
-        console.log('사용되는 파라미터:', boardParameter);
         
         let boardRows = '';
         

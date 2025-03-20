@@ -139,7 +139,6 @@ export const editorSlice = createSlice({
     addComponent: (state, action) => { 
       const component = action.payload;
       
-      console.log('추가되는 컴포넌트 정보:', component); // 디버깅 로그 추가
       
       // 유효한 컴포넌트 타입인지 확인
       if (!component.type || !Object.values(COMPONENT_TYPES).includes(component.type)) {

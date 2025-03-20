@@ -278,15 +278,14 @@ function ComponentRenderer({ component }) {
   }, [resizing]);
   
   const renderComponent = () => {
-    console.log('렌더링 컴포넌트 타입:', component.type, '타입 출처:', COMPONENT_TYPES);
+    const componentType = `${component.type}`.toUpperCase();
     
-    // 직접 COMPONENT_TYPES와 비교
-    switch(component.type) {
-      case COMPONENT_TYPES.TEXT:
+    switch(componentType) {
+      case 'TEXT':
         return <TextComponent content={component.content} style={component.style} />;
-      case COMPONENT_TYPES.IMAGE:
+      case 'IMAGE':
         return <ImageComponent src={component.content?.src || ''} alt={component.content?.alt || ''} style={component.style} />;
-      case COMPONENT_TYPES.CONTAINER:
+      case 'CONTAINER':
         return (
           <ContainerComponent style={component.style}>
             {childComponents.length > 0 ? 
@@ -297,15 +296,15 @@ function ComponentRenderer({ component }) {
             }
           </ContainerComponent>
         );
-      case COMPONENT_TYPES.BUTTON:
+      case 'BUTTON':
         return <ButtonComponent content={component.content || '버튼'} style={component.style} />;
-      case COMPONENT_TYPES.LOGIN:
+      case 'LOGIN':
         return <LoginForm style={component.style} />;
-      case COMPONENT_TYPES.BOARD:
+      case 'BOARD':
         return <BoardComponent style={component.style} data={component.data} />;
-      case COMPONENT_TYPES.DETAIL_PAGE:
+      case 'DETAIL_PAGE':
         return <DetailPageComponent style={component.style} data={component.data} />;
-      case COMPONENT_TYPES.ROW:
+      case 'ROW':
         return (
           <RowComponent 
             content={component.content} 
@@ -315,7 +314,7 @@ function ComponentRenderer({ component }) {
             components={allComponents}
           />
         );
-      case COMPONENT_TYPES.COLUMN:
+      case 'COLUMN':
         return (
           <ColumnComponent 
             content={component.content} 
