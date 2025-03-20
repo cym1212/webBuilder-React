@@ -7,7 +7,8 @@ import {
   updateComponentPosition, 
   selectComponents, 
   selectSelectedComponentId,
-  selectLayoutInfo
+  selectLayoutInfo,
+  selectComponent
 } from '../redux/editorSlice';
 import ComponentRenderer from './ComponentRenderer';
 import { getLayoutComponentById } from '../layouts';
@@ -25,6 +26,17 @@ function EditorCanvas() {
 
   // 최상위 컴포넌트만 필터링 (부모가 없는 컴포넌트)
   const rootComponents = components.filter(comp => !comp.parentId);
+
+  // 빈 캔버스 영역 클릭 핸들러
+  const handleCanvasClick = (e) => {
+    // 이벤트가 캔버스 자체에서 발생했는지 확인 (버블링된 이벤트가 아닌지)
+    if (e.target === e.currentTarget ||
+        e.target.className === 'layout-main-content' ||
+        e.target.className.includes('editor-canvas')) {
+      // 모든 컴포넌트 선택 해제 (selectComponent에 null 전달)
+      dispatch(selectComponent(null));
+    }
+  };
 
   // 컴포넌트의 최대 Y 위치를 계산하여 메인 영역 높이 결정
   const calculateMainContentHeight = () => {
@@ -191,6 +203,7 @@ function EditorCanvas() {
         height: '100%',
         overflow: 'auto'
       }}
+      onClick={handleCanvasClick}
     >
       {LayoutComponent ? (
         <div className="layout-container" style={{ position: 'relative', height: '100%', width: '100%' }}>
@@ -207,6 +220,7 @@ function EditorCanvas() {
                 border: isOver ? '2px dashed #007bff' : 'none',
                 transition: 'background-color 0.3s, border 0.3s'
               }}
+              onClick={handleCanvasClick}
             >
               {rootComponents.map(component => (
                 <ComponentRenderer key={component.id} component={component} />

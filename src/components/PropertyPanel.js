@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { SketchPicker } from 'react-color';
 import {
@@ -13,6 +13,15 @@ function PropertyPanel() {
   const dispatch = useDispatch();
   const selectedComponent = useSelector(selectSelectedComponent);
   const [activeTab, setActiveTab] = useState('layout'); // 'layout' 또는 'component'
+  
+  // 컴포넌트 선택 상태에 따라 활성 탭 자동 변경
+  useEffect(() => {
+    if (selectedComponent) {
+      setActiveTab('component');
+    } else {
+      setActiveTab('layout');
+    }
+  }, [selectedComponent]);
   
   // 탭 선택 핸들러
   const handleTabChange = (tab) => {
