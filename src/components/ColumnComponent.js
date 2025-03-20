@@ -110,6 +110,14 @@ const ColumnComponent = ({ content, style, data, children, id, components = [] }
         return;
       }
       
+      // 디버깅용 로그 추가
+      console.log('컬럼에 드롭된 아이템 원본:', item);
+      
+      // 직접 컴포넌트 타입 확인 + 카테고리 확인
+      const dropComponentType = item.type;
+      const category = item.category || 'unknown';
+      console.log('드롭 컴포넌트 타입 확인:', { dropComponentType, category, itemObj: item });
+      
       const offset = monitor.getClientOffset();
       if (!offset) return;
 
@@ -157,30 +165,70 @@ const ColumnComponent = ({ content, style, data, children, id, components = [] }
           }));
         }
       } else {
-        // 새 컴포넌트 추가
+        // 새 컴포넌트 생성
         let newWidth = '100%';
         let newHeight = 50;
         
-        // 타입에 따른 기본 크기 설정 (부모 영역 제한)
-        if (item.type === COMPONENT_TYPES.COLUMN) {
-          newHeight = 200;
-        } else if (item.type === COMPONENT_TYPES.ROW) {
-          newHeight = 100;
-        } else if (item.type === COMPONENT_TYPES.BUTTON) {
-          newHeight = 40;
-        } else if (item.type === COMPONENT_TYPES.IMAGE) {
-          newHeight = 200;
-        } else if (item.type === COMPONENT_TYPES.LOGIN) {
-          newHeight = 400;
+        // 정확한 컴포넌트 타입 결정
+        const newCompType = dropComponentType;
+        console.log('새 컴포넌트 타입:', { newCompType, itemObj: item });
+        
+        // 직접 COMPONENT_TYPES와 비교
+        switch(newCompType) {
+          case COMPONENT_TYPES.TEXT:
+            newHeight = 50;
+            break;
+          case COMPONENT_TYPES.CONTAINER:
+            newHeight = 300;
+            break;
+          case COMPONENT_TYPES.COLUMN:
+            newHeight = 200;
+            break;
+          case COMPONENT_TYPES.ROW:
+            newHeight = 100;
+            break;
+          case COMPONENT_TYPES.BUTTON:
+            newHeight = 40;
+            break;
+          case COMPONENT_TYPES.IMAGE:
+            newHeight = 200;
+            break;
+          case COMPONENT_TYPES.LOGIN:
+            newHeight = 400;
+            break;
+          default:
+            console.warn('알 수 없는 컴포넌트 타입:', newCompType);
+            newHeight = 50;
+        }
+        
+        // 새 고유 ID 생성
+        const newComponentId = uuidv4();
+        
+        // 기본 컨텐츠 생성
+        let defaultContent = '';
+        
+        // 직접 COMPONENT_TYPES와 비교
+        switch(newCompType) {
+          case COMPONENT_TYPES.TEXT:
+            defaultContent = '텍스트를 입력하세요';
+            break;
+          case COMPONENT_TYPES.IMAGE:
+            defaultContent = { src: 'https://via.placeholder.com/150', alt: '이미지' };
+            break;
+          case COMPONENT_TYPES.BUTTON:
+            defaultContent = '버튼';
+            break;
+          default:
+            defaultContent = '';
         }
         
         dispatch(addComponent({
-          id: uuidv4(),
-          type: item.type,
+          id: newComponentId,
+          type: newCompType,
           position: { x: 0, y }, // x를 항상 0으로 설정
           size: { width: newWidth, height: newHeight },
           style: {},
-          content: '',
+          content: defaultContent,
           parentId: id // 부모 ID 설정
         }));
       }

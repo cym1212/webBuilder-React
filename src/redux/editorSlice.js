@@ -139,6 +139,14 @@ export const editorSlice = createSlice({
     addComponent: (state, action) => { 
       const component = action.payload;
       
+      console.log('추가되는 컴포넌트 정보:', component); // 디버깅 로그 추가
+      
+      // 유효한 컴포넌트 타입인지 확인
+      if (!component.type || !Object.values(COMPONENT_TYPES).includes(component.type)) {
+        console.error('유효하지 않은 컴포넌트 타입:', component.type);
+        return; // 유효하지 않은 타입이면 추가하지 않음
+      }
+      
       // 컴포넌트 타입에 따른 기본 크기 설정
       const defaultSize = defaultComponentSizes[component.type] || { width: 200, height: 100 };
       
@@ -155,7 +163,7 @@ export const editorSlice = createSlice({
         position: component.position || { x: 0, y: 0 },
         size: component.size || defaultSize,
         style: componentStyle,
-        content: component.content || '',
+        content: component.content !== undefined ? component.content : '', // 내용이 빈 문자열이 될 수 있도록 수정
         data: component.data || defaultData,
         parentId: component.parentId || null // 부모 컴포넌트 ID
       });

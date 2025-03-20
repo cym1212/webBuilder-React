@@ -63,6 +63,14 @@ function EditorCanvas() {
         return;
       }
       
+      // 디버깅용 로그 추가
+      console.log('캔버스에 드롭된 아이템 원본:', item);
+      
+      // 직접 컴포넌트 타입 확인 + 카테고리 확인
+      const dropComponentType = item.type;
+      const category = item.category || 'unknown';
+      console.log('드롭 컴포넌트 타입 확인:', { dropComponentType, category, itemObj: item });
+      
       const offset = monitor.getClientOffset();
       if (!offset) return; 
 
@@ -106,50 +114,54 @@ function EditorCanvas() {
         let defaultWidth = '100%';
         let defaultHeight = 50;
         
-        console.log('드롭된 컴포넌트 타입:', item.type); // 디버깅용
-        const componentType = `${item.type}`.toUpperCase();
+        // 정확한 컴포넌트 타입 결정
+        const newCompType = dropComponentType;
+        console.log('새 컴포넌트 타입:', { newCompType, itemObj: item });
         
-        switch(componentType) {
-          case 'TEXT':
+        switch(newCompType) {
+          case COMPONENT_TYPES.TEXT:
             defaultHeight = 50;
             break;
-          case 'IMAGE':
+          case COMPONENT_TYPES.IMAGE:
             defaultHeight = 200;
             break;
-          case 'BUTTON':
+          case COMPONENT_TYPES.BUTTON:
             defaultHeight = 40;
             break;
-          case 'CONTAINER':
+          case COMPONENT_TYPES.CONTAINER:
             defaultHeight = 300;
             break;
-          case 'ROW':
+          case COMPONENT_TYPES.ROW:
             defaultHeight = 100;
             break;
-          case 'COLUMN':
+          case COMPONENT_TYPES.COLUMN:
             defaultHeight = 200;
             break;
-          case 'LOGIN':
+          case COMPONENT_TYPES.LOGIN:
             defaultHeight = 400;
             break;
-          case 'BOARD':
+          case COMPONENT_TYPES.BOARD:
             defaultHeight = 600;
             break;
-          case 'DETAIL_PAGE':
+          case COMPONENT_TYPES.DETAIL_PAGE:
             defaultHeight = 800;
             break;
           default:
-            console.warn('알 수 없는 컴포넌트 타입:', componentType);
+            console.warn('알 수 없는 컴포넌트 타입:', newCompType);
             defaultHeight = 50;
         }
 
+        // 새 고유 ID 생성
+        const newComponentId = uuidv4();
+        
         // 새 컴포넌트 추가
         dispatch(addComponent({
-          id: uuidv4(),
-          type: item.type,
+          id: newComponentId,
+          type: newCompType, // 명확한 타입 사용
           position: { x: 0, y }, // x를 0으로 설정하여 왼쪽부터 시작하도록 함
           size: { width: defaultWidth, height: defaultHeight },
           style: {},
-          content: getDefaultContent(item.type),
+          content: getDefaultContent(newCompType),
           parentId: null // 최상위 컴포넌트
         }));
       }
@@ -160,30 +172,30 @@ function EditorCanvas() {
   }), []);
 
   const getDefaultContent = (type) => {
-    console.log('컨텐츠 생성 타입:', type); // 디버깅용
-    const componentType = `${type}`.toUpperCase();
+    console.log('컨텐츠 생성용 타입:', type); // 디버깅용
     
-    switch(componentType) {
-      case 'TEXT':
+    // COMPONENT_TYPES와 직접 비교
+    switch(type) {
+      case COMPONENT_TYPES.TEXT:
         return '텍스트를 입력하세요';
-      case 'IMAGE':
+      case COMPONENT_TYPES.IMAGE:
         return { src: 'https://via.placeholder.com/150', alt: '이미지' };
-      case 'BUTTON':
+      case COMPONENT_TYPES.BUTTON:
         return '버튼';
-      case 'LOGIN':
+      case COMPONENT_TYPES.LOGIN:
         return '';
-      case 'BOARD':
+      case COMPONENT_TYPES.BOARD:
         return '';
-      case 'DETAIL_PAGE':
+      case COMPONENT_TYPES.DETAIL_PAGE:
         return '';
-      case 'ROW':
+      case COMPONENT_TYPES.ROW:
         return '';
-      case 'COLUMN':
+      case COMPONENT_TYPES.COLUMN:
         return '';
-      case 'CONTAINER':
+      case COMPONENT_TYPES.CONTAINER:
         return '';
       default:
-        console.warn('알 수 없는 컴포넌트 타입:', componentType);
+        console.warn('알 수 없는 컴포넌트 타입(컨텐츠 생성):', type);
         return '';
     }
   };

@@ -5,13 +5,39 @@ import LoginForm from "./LoginForm";
 import BoardComponent from './BoardComponent';
 import DetailPageComponent from './DetailPageComponent';
 
-const DraggableComponent = ({ type, name, icon }) => {
+const DraggableComponent = ({ type, name, icon, category }) => {
+  console.log('드래그할 컴포넌트 생성:', { type, name, category }); // 디버깅 로그
+
+  // 컴포넌트 타입이 문자열인지 확인
+  const typeStr = typeof type === 'string' ? type : String(type);
+  
   const [{ isDragging }, drag] = useDrag(() => ({
     type: 'COMPONENT',
-    item: { 
-      type: type.toString(),
-      name,
-      componentType: type
+    item: () => {
+      // 드래그 시작할 때 호출되는 함수
+      console.log('드래그 시작:', { type, name, typeStr, category });
+      
+      return { 
+        id: null, // 신규 컴포넌트임을 나타내는 null ID
+        name,
+        // 타입 정보 명확하게 전달
+        type,
+        componentType: type,
+        category, // 카테고리 정보 추가
+        // 디버깅용 정보
+        _debug: {
+          type,
+          typeStr,
+          category,
+          isContainer: type === COMPONENT_TYPES.CONTAINER,
+          isRow: type === COMPONENT_TYPES.ROW,
+          isColumn: type === COMPONENT_TYPES.COLUMN,
+          isText: type === COMPONENT_TYPES.TEXT,
+          isImage: type === COMPONENT_TYPES.IMAGE,
+          isButton: type === COMPONENT_TYPES.BUTTON,
+          componentTypeValues: Object.values(COMPONENT_TYPES)
+        }
+      };
     },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
@@ -23,10 +49,13 @@ const DraggableComponent = ({ type, name, icon }) => {
       ref={drag}
       className="draggable-component"
       style={{ opacity: isDragging ? 0.5 : 1 }}
-      data-component-type={type}
+      data-component-type={typeStr}
+      data-category={category}
     >
       <div className="component-icon">{icon}</div>
       <div className="component-label">{name}</div>
+      {/* 디버깅용 타입 표시 */}
+      <div style={{ display: 'none' }}>{typeStr}</div>
     </div>
   );
 };
@@ -125,19 +154,25 @@ function ComponentLibrary() {
       <h4 className="components-category-title">기본 요소</h4>
       <div className="components-list">
         <DraggableComponent 
+          key="basic-text"
           type={COMPONENT_TYPES.TEXT} 
           name="텍스트" 
           icon="T" 
+          category="basic"
         />
         <DraggableComponent 
+          key="basic-image"
           type={COMPONENT_TYPES.IMAGE} 
           name="이미지" 
           icon="🖼️" 
+          category="basic"
         />
         <DraggableComponent 
+          key="basic-button"
           type={COMPONENT_TYPES.BUTTON} 
           name="버튼" 
           icon="⏺" 
+          category="basic"
         />
       </div>
     </div>
@@ -149,19 +184,25 @@ function ComponentLibrary() {
       <h4 className="components-category-title">구조 요소</h4>
       <div className="components-list">
         <DraggableComponent 
+          key="layout-container"
           type={COMPONENT_TYPES.CONTAINER} 
           name="컨테이너" 
           icon="⬚" 
+          category="layout"
         />
         <DraggableComponent 
+          key="layout-row"
           type={COMPONENT_TYPES.ROW} 
           name="행 (Row)" 
           icon="↔️" 
+          category="layout"
         />
         <DraggableComponent 
+          key="layout-column"
           type={COMPONENT_TYPES.COLUMN} 
           name="열 (Column)" 
           icon="↕️" 
+          category="layout"
         />
       </div>
     </div>
@@ -174,19 +215,25 @@ function ComponentLibrary() {
         <h4 className="components-category-title">기능 요소</h4>
         <div className="components-list">
           <DraggableComponent 
+            key="advanced-login"
             type={COMPONENT_TYPES.LOGIN} 
             name="로그인 폼" 
             icon="🔑" 
+            category="advanced"
           />
           <DraggableComponent 
+            key="advanced-board"
             type={COMPONENT_TYPES.BOARD} 
             name="게시판" 
             icon="📋" 
+            category="advanced"
           />
           <DraggableComponent 
+            key="advanced-detail"
             type={COMPONENT_TYPES.DETAIL_PAGE} 
             name="상세 페이지" 
             icon="📄" 
+            category="advanced"
           />
         </div>
       </div>
