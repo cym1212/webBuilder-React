@@ -3,6 +3,7 @@ import clsx from "clsx";
 import { Link } from "react-router-dom";
 import FooterCopyright from "../../components/footer/FooterCopyright";
 import FooterNewsletter from "../../components/footer/FooterNewsletter";
+import logoImg from "../../assets/img/logo/logo.png";
 
 
 const FooterOne = ({
@@ -25,7 +26,7 @@ const FooterOne = ({
             <div className="footer-widget mb-30">
               <div className="footer-logo">
                 <Link to="/">
-                  <img src="/assets/img/logo/logo.png" alt="로고" />
+                  <img src={logoImg} alt="로고" />
                 </Link>
               </div>
               <div className="footer-about">

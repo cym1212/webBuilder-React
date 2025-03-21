@@ -1,5 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
+// 로고 이미지 직접 import
+import logoImg from "../../assets/img/logo/logo.png";
 
 const FooterTwo = ({
   backgroundColorClass,
@@ -14,7 +16,7 @@ const FooterTwo = ({
             <div className="col-lg-12">
               <div className="footer-logo">
                 <Link to="/">
-                  <img src="/assets/img/logo/logo.png" alt="로고" />
+                  <img src={logoImg} alt="로고" />
                 </Link>
               </div>
               <p className="footer-description">

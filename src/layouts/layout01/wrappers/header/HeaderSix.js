@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import IconGroup from "../../components/header/IconGroup";
 import MobileMenu from "../../components/header/MobileMenu";
 import OffcanvasMenu from "../../components/header/OffcanvasMenu";
+import Logo from "../../components/header/Logo";
 
 const HeaderSix = ({ layout, headerPaddingClass, headerBgClass }) => {
   const [scroll, setScroll] = useState(0);
@@ -52,14 +53,7 @@ const HeaderSix = ({ layout, headerPaddingClass, headerBgClass }) => {
           </div>
           <div className="col-xl-2 col-lg-2 col-md-6 col-6">
             {/* header logo */}
-            <div className="logo text-center logo-hm5">
-              <Link className="sticky-none" to={process.env.PUBLIC_URL + "/"}>
-                <img alt="" src="assets/img/logo/logo-2.png" />
-              </Link>
-              <Link className="sticky-block" to={process.env.PUBLIC_URL + "/"}>
-                <img alt="" src="assets/img/logo/logo.png" />
-              </Link>
-            </div>
+            <Logo imageUrl="/layouts/layout01/assets/img/logo/logo.png" logoClass="logo" />
           </div>
           <div className="col-xl-5 col-lg-4 col-md-6 col-6">
             {/* Icon group */}
