@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useDrop } from 'react-dnd';
 import { useDispatch, useSelector } from 'react-redux';
 import { v4 as uuidv4 } from 'uuid';
@@ -21,13 +21,51 @@ function EditorCanvas() {
   const layoutInfo = useSelector(selectLayoutInfo);
   const { selectedLayout, layoutProps } = layoutInfo;
   const [dragOverIndex, setDragOverIndex] = useState(null);
-  const [dragPosition, setDragPosition] = useState(null); // 'above' or 'below'
+  const [dragPosition, setDragPosition] = useState(null); // 'above', 'below', 'left', 'right'
+  const [isScrolling, setIsScrolling] = useState(false);
+  const [scrollDirection, setScrollDirection] = useState(null); // 'up', 'down'
+  const [isDraggingComponent, setIsDraggingComponent] = useState(false);
+
+  // 스크롤 컨트롤을 위한 참조
+  const canvasRef = useRef(null);
+  const scrollIntervalRef = useRef(null);
+  const scrollThreshold = 80; // 스크롤이 시작되는 경계 영역 크기(px)
+  const scrollSpeed = 10; // 스크롤 속도 조절
 
   // 선택된 레이아웃 컴포넌트 가져오기
   const LayoutComponent = selectedLayout ? getLayoutComponentById(selectedLayout) : null;
 
   // 최상위 컴포넌트만 필터링 (부모가 없는 컴포넌트)
   const rootComponents = components.filter(comp => !comp.parentId);
+
+  // 자동 스크롤 시작 함수
+  const startAutoScroll = (direction) => {
+    if (scrollIntervalRef.current) return; // 이미 스크롤 중이면 무시
+
+    setIsScrolling(true);
+    setScrollDirection(direction);
+
+    scrollIntervalRef.current = setInterval(() => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+
+      if (direction === 'up') {
+        canvas.scrollTop -= scrollSpeed;
+      } else if (direction === 'down') {
+        canvas.scrollTop += scrollSpeed;
+      }
+    }, 16); // 약 60fps
+  };
+
+  // 자동 스크롤 중지 함수
+  const stopAutoScroll = () => {
+    if (scrollIntervalRef.current) {
+      clearInterval(scrollIntervalRef.current);
+      scrollIntervalRef.current = null;
+    }
+    setIsScrolling(false);
+    setScrollDirection(null);
+  };
 
   // 빈 캔버스 영역 클릭 핸들러
   const handleCanvasClick = (e) => {
@@ -65,31 +103,69 @@ function EditorCanvas() {
       const offset = monitor.getClientOffset();
       if (!offset) return;
       
+      // 드래그 중임을 표시
+      setIsDraggingComponent(true);
+      
       // 현재 마우스 위치에서 컴포넌트 찾기
-      const canvas = document.getElementById('editor-canvas');
+      const canvas = canvasRef.current;
       if (!canvas) return;
       
       const canvasRect = canvas.getBoundingClientRect();
       const y = offset.y - canvasRect.top;
+      const x = offset.x - canvasRect.left;
+      
+      // 스크롤 처리
+      const canvasHeight = canvasRect.height;
+      
+      // 위쪽 경계 근처에서 스크롤 시작
+      if (y < scrollThreshold) {
+        startAutoScroll('up');
+      }
+      // 아래쪽 경계 근처에서 스크롤 시작
+      else if (y > canvasHeight - scrollThreshold) {
+        startAutoScroll('down');
+      }
+      // 경계 영역 밖이면 스크롤 중지
+      else {
+        stopAutoScroll();
+      }
       
       // 현재 위치에 있는 컴포넌트 찾기
-      const hoveredComponent = findComponentAtPosition(rootComponents, 0, y);
+      const hoveredComponent = findComponentAtPosition(rootComponents, x, y);
       
       if (hoveredComponent && hoveredComponent.id !== item.id) {
         const componentEl = document.getElementById(`component-${hoveredComponent.id}`);
         if (componentEl) {
           const rect = componentEl.getBoundingClientRect();
-          const middle = rect.top + (rect.height / 2);
-          const position = offset.y < middle ? 'above' : 'below';
           
-          // 드래그 오버 상태 업데이트
+          // 컴포넌트 중앙 계산
+          const middleX = rect.left + (rect.width / 2);
+          const middleY = rect.top + (rect.height / 2);
+          
+          // 가장 가까운 방향 계산
+          const distTop = Math.abs(offset.y - rect.top);
+          const distBottom = Math.abs(offset.y - rect.bottom);
+          const distLeft = Math.abs(offset.x - rect.left);
+          const distRight = Math.abs(offset.x - rect.right);
+          
+          // 최소 거리 찾기
+          const minDist = Math.min(distTop, distBottom, distLeft, distRight);
+          
+          let finalPosition;
+          
+          // 가장 가까운 가장자리 선택
+          if (minDist === distTop) finalPosition = 'above';
+          else if (minDist === distBottom) finalPosition = 'below';
+          else if (minDist === distLeft) finalPosition = 'left';
+          else finalPosition = 'right';
+          
           setDragOverIndex(hoveredComponent.order || 0);
-          setDragPosition(position);
+          setDragPosition(finalPosition);
         }
       } else {
         // 빈 공간에 드래그 중이거나 자기 자신 위에 드래그 중
         // 가장 가까운 컴포넌트 찾기
-        const closestComponent = findClosestComponent(rootComponents, y, item.id);
+        const closestComponent = findClosestComponent(rootComponents, x, y, item.id);
         if (closestComponent) {
           const componentEl = document.getElementById(`component-${closestComponent.component.id}`);
           if (componentEl) {
@@ -108,13 +184,19 @@ function EditorCanvas() {
         return;
       }
       
+      // 드래그 종료로 표시
+      setIsDraggingComponent(false);
+      
+      // 자동 스크롤 중지
+      stopAutoScroll();
+      
       // 디버깅용 로그 추가
       console.log('캔버스에 드롭된 아이템:', item);
       
       const offset = monitor.getClientOffset();
       if (!offset) return; 
 
-      const canvas = document.getElementById('editor-canvas');
+      const canvas = canvasRef.current;
       if (!canvas) return; 
 
       const canvasRect = canvas.getBoundingClientRect();
@@ -154,8 +236,12 @@ function EditorCanvas() {
         
         // 새로운 순서 계산
         let newOrder = dragOverIndex;
-        if (dragPosition === 'below') {
+        
+        // 위치에 따라 순서 조정
+        if (dragPosition === 'below' || dragPosition === 'right') {
           newOrder = dragOverIndex + 1;
+        } else if (dragPosition === 'above' || dragPosition === 'left') {
+          newOrder = dragOverIndex;
         }
         
         console.log('컴포넌트 이동:', {
@@ -264,8 +350,22 @@ function EditorCanvas() {
     }),
   }), [rootComponents]);
 
-  const getDefaultContent = (type) => {
+  // 드래그 종료 시 스크롤 및 상태 초기화
+  useEffect(() => {
+    if (!isOver) {
+      setIsDraggingComponent(false);
+      stopAutoScroll();
+      setDragOverIndex(null);
+      setDragPosition(null);
+    }
     
+    // 컴포넌트 언마운트 시 스크롤 정리
+    return () => {
+      stopAutoScroll();
+    };
+  }, [isOver]);
+
+  const getDefaultContent = (type) => {
     // COMPONENT_TYPES와 직접 비교
     switch(type) {
       case COMPONENT_TYPES.TEXT:
@@ -318,7 +418,7 @@ function EditorCanvas() {
       const rect = componentEl.getBoundingClientRect();
       
       // 좌표가 컴포넌트 내에 있는지 확인
-      if (y >= rect.top && y <= rect.bottom) {
+      if (y >= rect.top && y <= rect.bottom && x >= rect.left && x <= rect.right) {
         return component;
       }
     }
@@ -327,7 +427,7 @@ function EditorCanvas() {
   };
 
   // 가장 가까운 컴포넌트와 위치 찾기
-  const findClosestComponent = (components, y, excludeId) => {
+  const findClosestComponent = (components, x, y, excludeId) => {
     if (!components || components.length === 0) return null;
     
     let closestDistance = Infinity;
@@ -341,38 +441,94 @@ function EditorCanvas() {
       if (!componentEl) continue;
       
       const rect = componentEl.getBoundingClientRect();
+      
+      // 각 방향으로의 거리 계산
       const topDistance = Math.abs(y - rect.top);
       const bottomDistance = Math.abs(y - rect.bottom);
+      const leftDistance = Math.abs(x - rect.left);
+      const rightDistance = Math.abs(x - rect.right);
       
-      if (topDistance < closestDistance) {
-        closestDistance = topDistance;
-        closestComponent = component;
-        position = 'above';
-      }
+      // 가장 가까운 방향 찾기
+      const minDistance = Math.min(topDistance, bottomDistance, leftDistance, rightDistance);
       
-      if (bottomDistance < closestDistance) {
-        closestDistance = bottomDistance;
+      if (minDistance < closestDistance) {
+        closestDistance = minDistance;
         closestComponent = component;
-        position = 'below';
+        
+        // 가장 가까운 방향 결정
+        if (minDistance === topDistance) position = 'above';
+        else if (minDistance === bottomDistance) position = 'below';
+        else if (minDistance === leftDistance) position = 'left';
+        else position = 'right';
       }
     }
     
     return closestComponent ? { component: closestComponent, position } : null;
   };
 
-  // 컴포넌트 드래그 종료 시 상태 초기화
-  useEffect(() => {
-    if (!isOver) {
-      setDragOverIndex(null);
-      setDragPosition(null);
-    }
-  }, [isOver]);
+  // 드래그 위치에 따른 유효한 드롭 가이드라인 생성
+  const renderDropGuides = (component, index) => {
+    const order = component.order || index;
+    const showAboveLine = dragOverIndex === order && dragPosition === 'above';
+    const showBelowLine = dragOverIndex === order && dragPosition === 'below';
+    const showLeftLine = dragOverIndex === order && dragPosition === 'left';
+    const showRightLine = dragOverIndex === order && dragPosition === 'right';
+    
+    return (
+      <div key={component.id} style={{ position: 'relative' }}>
+        {showAboveLine && (
+          <div 
+            className="drop-indicator-line drop-indicator-horizontal" 
+            style={{
+              top: '-2px',
+              transform: 'translateY(-50%)'
+            }} 
+          />
+        )}
+        
+        {showBelowLine && (
+          <div 
+            className="drop-indicator-line drop-indicator-horizontal" 
+            style={{
+              bottom: '-2px',
+              transform: 'translateY(50%)'
+            }} 
+          />
+        )}
+        
+        {showLeftLine && (
+          <div 
+            className="drop-indicator-line drop-indicator-vertical" 
+            style={{
+              left: '-2px',
+              transform: 'translateX(-50%)'
+            }} 
+          />
+        )}
+        
+        {showRightLine && (
+          <div 
+            className="drop-indicator-line drop-indicator-vertical" 
+            style={{
+              right: '-2px',
+              transform: 'translateX(50%)'
+            }} 
+          />
+        )}
+        
+        <ComponentRenderer component={component} />
+      </div>
+    );
+  };
 
   return (
     <div 
       id="editor-canvas"
-      ref={drop}  
-      className={`editor-canvas ${isOver ? 'drop-active' : ''}`}
+      ref={(node) => {
+        canvasRef.current = node;
+        drop(node);
+      }}  
+      className={`editor-canvas ${isOver ? 'drop-active' : ''} ${isDraggingComponent ? 'dragging-over' : ''}`}
       style={{ 
         backgroundColor: isOver ? '#f0f8ff' : 'white',
         position: 'relative',
@@ -385,6 +541,18 @@ function EditorCanvas() {
       }}
       onClick={handleCanvasClick}
     >
+      {/* 스크롤 안내 요소 */}
+      {isDraggingComponent && (
+        <>
+          <div 
+            className={`scroll-indicator scroll-indicator-top ${scrollDirection === 'up' ? 'active' : ''}`}
+          />
+          <div 
+            className={`scroll-indicator scroll-indicator-bottom ${scrollDirection === 'down' ? 'active' : ''}`}
+          />
+        </>
+      )}
+      
       {LayoutComponent ? (
         <div className="layout-container" style={{ position: 'relative', height: '100%', width: '100%' }}>
           <LayoutComponent {...layoutProps}>
@@ -409,39 +577,7 @@ function EditorCanvas() {
               {rootComponents
                 .slice()
                 .sort((a, b) => (a.order || 0) - (b.order || 0))
-                .map((component, index) => {
-                  const order = component.order || index;
-                  const showAboveLine = dragOverIndex === order && dragPosition === 'above';
-                  const showBelowLine = dragOverIndex === order && dragPosition === 'below';
-                  
-                  return (
-                    <div key={component.id} style={{ position: 'relative' }}>
-                      {showAboveLine && (
-                        <div 
-                          className="drop-indicator-line" 
-                          style={{
-                            position: 'absolute',
-                            top: '-5px',
-                            left: 0,
-                            transform: 'translateY(-50%)'
-                          }} 
-                        />
-                      )}
-                      <ComponentRenderer component={component} />
-                      {showBelowLine && (
-                        <div 
-                          className="drop-indicator-line" 
-                          style={{
-                            position: 'absolute',
-                            bottom: '-5px',
-                            left: 0,
-                            transform: 'translateY(50%)'
-                          }} 
-                        />
-                      )}
-                    </div>
-                  );
-                })
+                .map((component, index) => renderDropGuides(component, index))
               }
             </div>
           </LayoutComponent>
@@ -459,39 +595,7 @@ function EditorCanvas() {
           {rootComponents
             .slice()
             .sort((a, b) => (a.order || 0) - (b.order || 0))
-            .map((component, index) => {
-              const order = component.order || index;
-              const showAboveLine = dragOverIndex === order && dragPosition === 'above';
-              const showBelowLine = dragOverIndex === order && dragPosition === 'below';
-              
-              return (
-                <div key={component.id} style={{ position: 'relative' }}>
-                  {showAboveLine && (
-                    <div 
-                      className="drop-indicator-line" 
-                      style={{
-                        position: 'absolute',
-                        top: '-5px',
-                        left: 0,
-                        transform: 'translateY(-50%)'
-                      }} 
-                    />
-                  )}
-                  <ComponentRenderer component={component} />
-                  {showBelowLine && (
-                    <div 
-                      className="drop-indicator-line" 
-                      style={{
-                        position: 'absolute',
-                        bottom: '-5px',
-                        left: 0,
-                        transform: 'translateY(50%)'
-                      }} 
-                    />
-                  )}
-                </div>
-              );
-            })
+            .map((component, index) => renderDropGuides(component, index))
           }
         </div>
       )}
