@@ -401,7 +401,7 @@ function EditorCanvas() {
                 transition: 'background-color 0.3s, border 0.3s',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '5px'
+                gap: '15px'
               }}
               onClick={handleCanvasClick}
             >
@@ -451,7 +451,7 @@ function EditorCanvas() {
         <div className="editor-content" style={{ 
           display: 'flex', 
           flexDirection: 'column', 
-          gap: '5px',
+          gap: '15px',
           width: '100%',
           padding: '0px' 
         }}>

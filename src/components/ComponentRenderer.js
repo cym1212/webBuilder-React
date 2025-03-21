@@ -348,7 +348,7 @@ function ComponentRenderer({ component }) {
       opacity: isDragging ? 0.5 : 1,
       border: component.isSelected ? '2px solid #007bff' : 'none',
       boxSizing: 'border-box',
-      margin: '0 0 5px 0',
+      margin: '0 0 15px 0',
       position: 'relative', // absolute에서 relative로 변경
       width: '100%', // 항상 100% 너비 보장
       height: `${component.size.height}px`,
@@ -366,7 +366,7 @@ function ComponentRenderer({ component }) {
       opacity: isDragging ? 0.5 : 1,
       border: component.isSelected ? '2px solid #007bff' : 'none',
       boxSizing: 'border-box',
-      margin: '0 0 5px 0',
+      margin: '0 0 15px 0',
       position: 'relative', // absolute에서 relative로 변경
       width: '100%', // 항상 100% 너비 보장
       height: `${component.size.height}px`,
@@ -385,7 +385,7 @@ function ComponentRenderer({ component }) {
       position: 'relative', // absolute에서 relative로 변경
       width: '100%', // 항상 100% 너비 보장
       height: `${component.size.height}px`,
-      margin: '0 0 5px 0',
+      margin: '0 0 15px 0',
       cursor: 'default',
       opacity: isDragging ? 0.5 : 1,
       border: component.isSelected ? '2px solid #007bff' : 'none',
@@ -403,7 +403,7 @@ function ComponentRenderer({ component }) {
       position: 'relative', // absolute에서 relative로 변경
       width: '100%', // 항상 100% 너비 보장
       height: `${component.size.height}px`,
-      margin: '0 0 5px 0',
+      margin: '0 0 15px 0',
       opacity: isDragging ? 0.5 : 1,
       border: component.isSelected ? '2px solid #007bff' : 'none',
       boxSizing: 'border-box',
