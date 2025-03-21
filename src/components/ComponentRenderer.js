@@ -37,6 +37,8 @@ function ComponentRenderer({ component }) {
       id: component.id, 
       type: component.type.toString(),
       componentType: component.type,
+      parentId: component.parentId,
+      order: component.order,
       hasChildren: childComponents.length > 0  // 자식이 있는지 여부 전달
     },
     collect: (monitor) => ({
@@ -45,8 +47,8 @@ function ComponentRenderer({ component }) {
     // 드래그 종료 시 호출되는 함수
     end: (item, monitor) => {
       // 드롭이 성공하지 않았다면 원래 위치로 복귀
-      if (!monitor.didDrop() && item.hasChildren) {
-        // 자식이 있는 컴포넌트가 사라지지 않도록 원래 위치 유지
+      if (!monitor.didDrop()) {
+        // 원래 위치로 복귀
         dispatch(updateComponentPosition({ 
           id: component.id, 
           newPosition: component.position,
@@ -54,7 +56,7 @@ function ComponentRenderer({ component }) {
         }));
       }
     }
-  }), [component.id, component.type, childComponents.length, component.position, component.parentId]);
+  }), [component.id, component.type, component.parentId, component.order, childComponents.length, component.position]);
 
   const [, drop] = useDrop(() => ({
     accept: 'COMPONENT',
@@ -340,76 +342,75 @@ function ComponentRenderer({ component }) {
   let componentStyle;
   
   if (isGridComponent && isChildOfGridComponent) {
-    // 다른 그리드 컴포넌트 내부에 있는 Row, Column - 자유 배치
+    // 다른 그리드 컴포넌트 내부에 있는 Row, Column
     componentStyle = {
       cursor: resizing ? 'auto' : 'move',
       opacity: isDragging ? 0.5 : 1,
-      border: component.isSelected ? '2px solid #007bff' : '1px dashed #ccc',
+      border: component.isSelected ? '2px solid #007bff' : 'none',
       boxSizing: 'border-box',
-      margin: '0',
-      position: 'absolute',
+      margin: '0 0 5px 0',
+      position: 'relative', // absolute에서 relative로 변경
       width: '100%', // 항상 100% 너비 보장
       height: `${component.size.height}px`,
-      left: '0', // x 좌표는 항상 0
-      top: `${component.position.y}px`,
-      zIndex: component.isSelected ? 100 : 1,
-      paddingLeft: component.style.paddingLeft || '0px',
-      paddingRight: component.style.paddingRight || '0px',
+      zIndex: component.isSelected ? 10 : 1,
+      paddingLeft: '0px',
+      paddingRight: '0px',
+      paddingTop: component.style.paddingTop || '0px',
+      paddingBottom: component.style.paddingBottom || '0px',
       ...component.style
     };
   } else if (isGridComponent) {
-    // 최상위 그리드 컴포넌트 - 크기 조절 가능
+    // 최상위 그리드 컴포넌트
     componentStyle = {
       cursor: 'default',
-      opacity: isDragging ? 0.5 : 1,
-      border: component.isSelected ? '2px solid #007bff' : '1px solid #e2e8f0',
-      boxSizing: 'border-box',
-      margin: '0',
-      position: 'absolute',
-      width: '100%', // 항상 100% 너비 보장
-      height: `${component.size.height}px`,
-      left: '0', // x 좌표는 항상 0
-      top: `${component.position.y}px`,
-      zIndex: component.isSelected ? 100 : 1,
-      backgroundColor: component.type === COMPONENT_TYPES.ROW 
-        ? 'rgba(247, 250, 252, 0.5)' 
-        : 'rgba(237, 242, 247, 0.5)',
-      borderRadius: '4px',
-      paddingLeft: component.style.paddingLeft || '20px',
-      paddingRight: component.style.paddingRight || '20px',
-      ...component.style
-    };
-  } else if (isChildOfGridComponent) {
-    // 그리드 내부의 일반 컴포넌트 - 자유 배치
-    componentStyle = {
-      position: 'absolute',
-      left: '0', // x 좌표는 항상 0
-      top: `${component.position.y}px`,
-      width: '100%', // 항상 100% 너비 보장
-      height: `${component.size.height}px`,
-      margin: '0',
-      cursor: 'default',
-      opacity: isDragging ? 0.5 : 1,
-      border: component.isSelected ? '2px solid #007bff' : '1px dashed #ccc',
-      boxSizing: 'border-box',
-      zIndex: component.isSelected ? 100 : 1,
-      paddingLeft: component.style.paddingLeft || '0px',
-      paddingRight: component.style.paddingRight || '0px',
-      ...component.style
-    };
-  } else {
-    // 최상위 컴포넌트 - 가로 세로 크기 조절 모두 가능
-    componentStyle = {
-      position: 'absolute',
-      left: '0', // x 좌표는 항상 0
-      top: `${component.position.y}px`,
-      width: '100%', // 항상 100% 너비 보장
-      height: `${component.size.height}px`,
       opacity: isDragging ? 0.5 : 1,
       border: component.isSelected ? '2px solid #007bff' : 'none',
       boxSizing: 'border-box',
-      paddingLeft: component.style.paddingLeft || '0px',
-      paddingRight: component.style.paddingRight || '0px',
+      margin: '0 0 5px 0',
+      position: 'relative', // absolute에서 relative로 변경
+      width: '100%', // 항상 100% 너비 보장
+      height: `${component.size.height}px`,
+      zIndex: component.isSelected ? 10 : 1,
+      backgroundColor: 'transparent',
+      borderRadius: '0px',
+      paddingLeft: '0px',
+      paddingRight: '0px',
+      paddingTop: '0px',
+      paddingBottom: '0px',
+      ...component.style
+    };
+  } else if (isChildOfGridComponent) {
+    // 그리드 내부의 일반 컴포넌트
+    componentStyle = {
+      position: 'relative', // absolute에서 relative로 변경
+      width: '100%', // 항상 100% 너비 보장
+      height: `${component.size.height}px`,
+      margin: '0 0 5px 0',
+      cursor: 'default',
+      opacity: isDragging ? 0.5 : 1,
+      border: component.isSelected ? '2px solid #007bff' : 'none',
+      boxSizing: 'border-box',
+      zIndex: component.isSelected ? 10 : 1,
+      paddingLeft: '0px',
+      paddingRight: '0px',
+      paddingTop: component.style.paddingTop || '0px',
+      paddingBottom: component.style.paddingBottom || '0px',
+      ...component.style
+    };
+  } else {
+    // 최상위 컴포넌트
+    componentStyle = {
+      position: 'relative', // absolute에서 relative로 변경
+      width: '100%', // 항상 100% 너비 보장
+      height: `${component.size.height}px`,
+      margin: '0 0 5px 0',
+      opacity: isDragging ? 0.5 : 1,
+      border: component.isSelected ? '2px solid #007bff' : 'none',
+      boxSizing: 'border-box',
+      paddingLeft: '0px',
+      paddingRight: '0px',
+      paddingTop: component.style.paddingTop || '0px',
+      paddingBottom: component.style.paddingBottom || '0px',
       transition: 'padding 0.2s ease',
       ...component.style
     };
@@ -417,6 +418,7 @@ function ComponentRenderer({ component }) {
   
   return (
     <div
+      id={`component-${component.id}`}
       ref={(node) => {
         componentRef.current = node;
         drag(drop(node));

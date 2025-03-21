@@ -78,9 +78,9 @@ const defaultComponentStyles = {
     paddingRight: '0px' 
   },
   [COMPONENT_TYPES.CONTAINER]: { 
-    backgroundColor: '#f8f9fa', 
-    border: '1px solid #dee2e6', 
-    borderRadius: '4px',
+    backgroundColor: 'transparent', 
+    border: 'none', 
+    borderRadius: '0px',
     paddingLeft: '0px',
     paddingRight: '0px' 
   },
@@ -91,44 +91,44 @@ const defaultComponentStyles = {
     borderRadius: '4px', 
     padding: '8px 16px', 
     fontSize: '14px',
-    paddingLeft: '20px',
-    paddingRight: '20px' 
+    paddingLeft: '0px',
+    paddingRight: '0px' 
   },
   [COMPONENT_TYPES.LOGIN]: { 
-    backgroundColor: '#f8f9fa', 
-    borderRadius: '8px', 
-    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)', 
-    padding: '20px',
+    backgroundColor: 'transparent', 
+    borderRadius: '0px', 
+    boxShadow: 'none', 
+    padding: '0px',
     buttonColor: '#4a90e2',
-    paddingLeft: '20px',
-    paddingRight: '20px'
+    paddingLeft: '0px',
+    paddingRight: '0px'
   },
   [COMPONENT_TYPES.BOARD]: { 
-    backgroundColor: '#ffffff', 
-    borderRadius: '8px', 
-    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)', 
-    padding: '20px',
-    paddingLeft: '20px',
-    paddingRight: '20px'
+    backgroundColor: 'transparent', 
+    borderRadius: '0px', 
+    boxShadow: 'none', 
+    padding: '0px',
+    paddingLeft: '0px',
+    paddingRight: '0px'
   },
   [COMPONENT_TYPES.DETAIL_PAGE]: { 
-    backgroundColor: '#ffffff', 
-    borderRadius: '8px', 
-    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)', 
-    padding: '20px',
+    backgroundColor: 'transparent', 
+    borderRadius: '0px', 
+    boxShadow: 'none', 
+    padding: '0px',
     buttonColor: '#4a90e2',
-    paddingLeft: '20px',
-    paddingRight: '20px'
+    paddingLeft: '0px',
+    paddingRight: '0px'
   },
   [COMPONENT_TYPES.ROW]: {
     backgroundColor: 'transparent',
-    paddingLeft: '20px',
-    paddingRight: '20px'
+    paddingLeft: '0px',
+    paddingRight: '0px'
   },
   [COMPONENT_TYPES.COLUMN]: {
     backgroundColor: 'transparent',
-    paddingLeft: '20px',
-    paddingRight: '20px'
+    paddingLeft: '0px',
+    paddingRight: '0px'
   }
 };
 
@@ -256,7 +256,7 @@ export const editorSlice = createSlice({
       localStorage.setItem('savedProjects', JSON.stringify(state.savedProjects));
     },
     updateComponentPosition: (state, action) => {
-      const { id, newPosition, parentId, size } = action.payload;
+      const { id, newPosition, parentId, size, order } = action.payload;
       const component = state.components.find(comp => comp.id === id);
       if (component) {
         // 항상 x 위치를 0으로 설정하여 가로로 전체 너비를 사용할 수 있게 함
@@ -268,6 +268,11 @@ export const editorSlice = createSlice({
         // parentId가 지정되었다면 업데이트 (부모 컴포넌트 변경)
         if (parentId !== undefined) {
           component.parentId = parentId;
+        }
+        
+        // order가 지정되었다면 업데이트 (컴포넌트 순서 변경)
+        if (order !== undefined) {
+          component.order = order;
         }
         
         // size가 지정되었다면 컴포넌트 크기 업데이트

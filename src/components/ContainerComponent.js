@@ -6,9 +6,9 @@ function ContainerComponent({ style, children }) {
       style={{
         width: '100%',
         height: '100%',
-        backgroundColor: style.backgroundColor || '#f8f9fa',
-        border: style.border || '1px solid #dee2e6',
-        borderRadius: style.borderRadius || '4px',
+        backgroundColor: style.backgroundColor || 'transparent',
+        border: style.border || 'none',
+        borderRadius: style.borderRadius || '0',
         padding: style.padding || '0',
         display: 'flex',
         alignItems: 'center',
@@ -20,7 +20,7 @@ function ContainerComponent({ style, children }) {
         <div style={{ 
           color: '#6c757d', 
           fontStyle: 'italic',
-          padding: '20px',
+          padding: '0',
           textAlign: 'center'
         }}>
           컨테이너 영역

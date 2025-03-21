@@ -133,10 +133,10 @@ function BoardComponent({ style, data = [] }) {
     width: '100%',
     height: '100%',
     overflow: 'auto',
-    padding: '16px',
-    backgroundColor: '#ffffff',
-    borderRadius: '8px',
-    boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+    padding: '0px',
+    backgroundColor: 'transparent',
+    borderRadius: '0px',
+    boxShadow: 'none',
     ...style
   };
 
@@ -144,12 +144,12 @@ function BoardComponent({ style, data = [] }) {
     <div style={defaultStyle} className="board-component">
       <h3 style={{ 
         borderBottom: '1px solid #e2e8f0', 
-        paddingBottom: '12px', 
+        paddingBottom: '6px', 
         marginTop: '0',
         fontSize: '1.25rem',
         fontWeight: '600',
         color: '#334155',
-        marginBottom: '16px'
+        marginBottom: '8px'
       }}>
         {boardTitle}
         {boardParameter && <span style={{ 
@@ -167,7 +167,7 @@ function BoardComponent({ style, data = [] }) {
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          padding: '32px',
+          padding: '12px',
           borderRadius: '6px',
           backgroundColor: '#f8fafc'
         }}>

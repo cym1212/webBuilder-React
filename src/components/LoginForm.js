@@ -2,10 +2,10 @@ import React from "react";
 
 const LoginForm = ({ style }) => {
   const defaultStyle = {
-    padding: '20px',
-    backgroundColor: '#f8f9fa',
-    borderRadius: '8px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+    padding: '0px',
+    backgroundColor: 'transparent',
+    borderRadius: '0px',
+    boxShadow: 'none',
     fontFamily: 'Arial, sans-serif',
     ...style
   };
@@ -13,14 +13,16 @@ const LoginForm = ({ style }) => {
   const formStyle = {
     display: 'flex',
     flexDirection: 'column',
-    gap: '10px'
+    gap: '10px',
+    width: '100%'
   };
 
   const inputStyle = {
     padding: '8px 12px',
     border: '1px solid #ced4da',
     borderRadius: '4px',
-    fontSize: '14px'
+    fontSize: '14px',
+    width: '100%'
   };
 
   const labelStyle = {
@@ -37,7 +39,8 @@ const LoginForm = ({ style }) => {
     borderRadius: '4px',
     cursor: 'pointer',
     fontSize: '14px',
-    marginTop: '10px'
+    marginTop: '10px',
+    width: '100%'
   };
 
   return (
