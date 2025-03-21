@@ -295,6 +295,7 @@ export const editorSlice = createSlice({
         name: state.projectName,
         components: state.components,
         canvasSize: state.canvasSize,
+        layout: state.layout,
         timestamp: new Date().toISOString()
       };
       
@@ -318,6 +319,11 @@ export const editorSlice = createSlice({
         state.projectName = projectData.name || '가져온 프로젝트';
         state.components = projectData.components;
         state.canvasSize = projectData.canvasSize || state.canvasSize;
+        if (projectData.layout) {
+          state.layout = projectData.layout;
+        } else {
+          state.layout = initialState.layout;
+        }
         state.selectedComponentId = null;
       }
     },

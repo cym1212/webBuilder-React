@@ -1,13 +1,30 @@
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { store } from '../redux/store';
-import { selectComponents, selectProjectName } from '../redux/editorSlice';
+import { selectComponents, selectProjectName, selectLayoutInfo } from '../redux/editorSlice';
+import { getLayoutComponentById } from '../layouts';
 
 // 컴포넌트 데이터를 React 코드로 변환
-const generateReactCode = (components) => {
+const generateReactCode = (components, layoutInfo = null) => {
   let imports = `import React from 'react';\nimport './App.css';\n\n`;
   let componentCode = '';
   let styles = '';
+
+  // 레이아웃 관련 코드 생성
+  let layoutImport = '';
+  let layoutComponent = null;
+  let layoutProps = {};
+
+  if (layoutInfo && layoutInfo.selectedLayout) {
+    const { selectedLayout, layoutProps: props } = layoutInfo;
+    // 레이아웃 컴포넌트 가져오기
+    layoutComponent = getLayoutComponentById(selectedLayout);
+    layoutProps = props || {};
+    
+    // 레이아웃 임포트 코드 추가 (실제 프로젝트 구조에 맞게 조정 필요)
+    layoutImport = `import ${selectedLayout} from './layouts/${selectedLayout}';\n`;
+    imports += layoutImport;
+  }
 
   // 컴포넌트 타입별 코드 생성
   components.forEach(component => {
@@ -75,8 +92,30 @@ const generateReactCode = (components) => {
     }
   });
 
-  // App 컴포넌트 생성
-  const appComponent = `
+  // 레이아웃 유무에 따른 App 컴포넌트 생성
+  let appComponent = '';
+  
+  if (layoutInfo && layoutInfo.selectedLayout) {
+    // 레이아웃을 사용하는 경우
+    const layoutPropsStr = JSON.stringify(layoutProps, null, 2)
+      .replace(/"([^"]+)":/g, '$1:') // 따옴표 제거
+      .replace(/"/g, "'"); // 문자열 값에 작은 따옴표 사용
+      
+    appComponent = `
+function App() {
+  return (
+    <div className="App">
+      <${layoutInfo.selectedLayout} ${Object.keys(layoutProps).map(key => `${key}={${typeof layoutProps[key] === 'string' ? `'${layoutProps[key]}'` : layoutProps[key]}}`).join(' ')}>
+        <div className="layout-main-content" style={{ position: 'relative', width: '100%', minHeight: '100vh' }}>
+          ${componentCode}
+        </div>
+      </${layoutInfo.selectedLayout}>
+    </div>
+  );
+}`;
+  } else {
+    // 레이아웃을 사용하지 않는 경우 (기존 코드)
+    appComponent = `
 function App() {
   return (
     <div className="App">
@@ -85,10 +124,10 @@ function App() {
       </div>
     </div>
   );
-}
+}`;
+  }
 
-export default App;
-`;
+  appComponent += `\n\nexport default App;`;
 
   return {
     appCode: imports + appComponent,
@@ -109,11 +148,18 @@ const generateCSS = () => {
   height: 100vh;
   background-color: #ffffff;
 }
+
+.layout-main-content {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background-color: #ffffff;
+}
 `;
 };
 
 // 빌드된 HTML 생성 (정적 파일)
-const generateStaticHTML = (projectName, components) => {
+const generateStaticHTML = (projectName, components, layoutInfo = null) => {
   // 컴포넌트 HTML 생성
   let componentsHTML = '';
   components.forEach(component => {
@@ -181,6 +227,59 @@ const generateStaticHTML = (projectName, components) => {
     }
   });
 
+  // 레이아웃 관련 CSS 및 HTML
+  let layoutCSS = '';
+  let layoutHTML = '';
+  let contentWrapperStart = '<div class="canvas">';
+  let contentWrapperEnd = '</div>';
+  
+  if (layoutInfo && layoutInfo.selectedLayout) {
+    // 실제 레이아웃 구현에 맞게 CSS 및 HTML 생성
+    layoutCSS = `
+/* ${layoutInfo.selectedLayout} 레이아웃 스타일 */
+.layout-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.layout-header {
+  padding: 16px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.layout-sidebar {
+  padding: 16px;
+  background-color: #f8f9fa;
+  border-right: 1px solid #e9ecef;
+}
+
+.layout-main-content {
+  flex: 1;
+  padding: 16px;
+  position: relative;
+}
+
+.layout-footer {
+  padding: 16px;
+  background-color: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+}
+`;
+    
+    // 레이아웃 구조에 맞게 컨텐츠 래퍼 설정
+    contentWrapperStart = `<div class="layout-container">
+  <div class="layout-header">${layoutInfo.layoutProps.title || projectName}</div>
+  <div class="layout-main-content">`;
+    
+    contentWrapperEnd = `
+  </div>
+  <div class="layout-footer">${layoutInfo.layoutProps.footer || '© ' + new Date().getFullYear()}</div>
+</div>`;
+  }
+
   // 전체 HTML 생성
   return `<!DOCTYPE html>
 <html lang="ko">
@@ -211,14 +310,15 @@ const generateStaticHTML = (projectName, components) => {
         height: 100vh;
         background-color: #ffffff;
       }
+      ${layoutCSS}
     </style>
   </head>
   <body>
     <div id="root">
       <div class="App">
-        <div class="canvas">
+        ${contentWrapperStart}
           ${componentsHTML}
-        </div>
+        ${contentWrapperEnd}
       </div>
     </div>
   </body>
@@ -233,13 +333,14 @@ export const buildAndDownloadProject = async () => {
     const state = store.getState();
     const components = selectComponents(state);
     const projectName = selectProjectName(state);
+    const layoutInfo = selectLayoutInfo(state);
     
     if (!components || components.length === 0) {
       return { success: false, error: '빌드할 컴포넌트가 없습니다. 먼저 컴포넌트를 추가해주세요.' };
     }
     
-    // 정적 HTML 생성 (빌드된 버전)
-    const staticHTML = generateStaticHTML(projectName, components);
+    // 레이아웃 정보를 포함한 정적 HTML 생성
+    const staticHTML = generateStaticHTML(projectName, components, layoutInfo);
     
     // ZIP 파일 생성
     const zip = new JSZip();
@@ -268,13 +369,14 @@ export const downloadSourceCode = async () => {
     const state = store.getState();
     const components = selectComponents(state);
     const projectName = selectProjectName(state);
+    const layoutInfo = selectLayoutInfo(state);
     
     if (!components || components.length === 0) {
       return { success: false, error: '다운로드할 컴포넌트가 없습니다. 먼저 컴포넌트를 추가해주세요.' };
     }
     
-    // 코드 생성
-    const { appCode } = generateReactCode(components);
+    // 레이아웃 정보를 포함한 코드 생성
+    const { appCode } = generateReactCode(components, layoutInfo);
     const css = generateCSS();
     const html = `<!DOCTYPE html>
 <html lang="en">
@@ -349,4 +451,4 @@ root.render(
     console.error('다운로드 실패:', error);
     return { success: false, error: error.message };
   }
-}; 
+};

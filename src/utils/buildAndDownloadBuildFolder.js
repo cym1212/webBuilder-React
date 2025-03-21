@@ -1,7 +1,7 @@
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { store } from '../redux/store';
-import { selectComponents, selectProjectName } from '../redux/editorSlice';
+import { selectComponents, selectProjectName, selectLayoutInfo } from '../redux/editorSlice';
 
 // 리액트 빌드 파일 생성 (index.html, static 폴더 등)
 const buildAndDownloadBuildFolder = async () => {
@@ -10,19 +10,20 @@ const buildAndDownloadBuildFolder = async () => {
     const state = store.getState();
     const components = selectComponents(state);
     const projectName = selectProjectName(state);
+    const layoutInfo = selectLayoutInfo(state);
     
     if (!components || components.length === 0) {
       return { success: false, error: '빌드할 컴포넌트가 없습니다. 먼저 컴포넌트를 추가해주세요.' };
     }
     
-    // 빌드된 HTML 생성 (index.html)
-    const indexHTML = generateBuildHTML(projectName, components);
+    // 레이아웃 정보를 포함한 빌드된 HTML 생성 (index.html)
+    const indexHTML = generateBuildHTML(projectName, components, layoutInfo);
     
     // CSS 생성 (main.css)
-    const mainCSS = generateMainCSS();
+    const mainCSS = generateMainCSS(layoutInfo);
     
     // JavaScript 생성 (main.js)
-    const mainJS = generateMainJS(components);
+    const mainJS = generateMainJS(components, layoutInfo);
     
     // ZIP 파일 생성 (build 폴더 구조 모방)
     const zip = new JSZip();
@@ -96,6 +97,7 @@ const buildAndDownloadBuildFolder = async () => {
     const projectData = {
       name: projectName,
       components: components,
+      layout: layoutInfo, // 레이아웃 정보 추가
       timestamp: new Date().toISOString()
     };
     zip.file('project-data.json', JSON.stringify(projectData, null, 2));
@@ -112,7 +114,7 @@ const buildAndDownloadBuildFolder = async () => {
 };
 
 // 빌드된 HTML 생성
-const generateBuildHTML = (projectName, components) => {
+const generateBuildHTML = (projectName, components, layoutInfo = null) => {
   // 컴포넌트 타입 확인
   const hasLoginComponent = components.some(comp => comp.type === 'LOGIN');
   const hasBoardComponent = components.some(comp => comp.type === 'BOARD');
@@ -133,6 +135,55 @@ const generateBuildHTML = (projectName, components) => {
   if (hasLoginComponent || hasBoardComponent || hasDetailPageComponent) {
     additionalMeta += `
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />`;
+  }
+  
+  // 레이아웃 관련 추가 스타일
+  let layoutStyles = '';
+  if (layoutInfo && layoutInfo.selectedLayout) {
+    layoutStyles = `
+      /* 레이아웃 스타일 - ${layoutInfo.selectedLayout} */
+      .layout-container {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        width: 100%;
+      }
+      
+      .layout-header {
+        padding: 16px;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #e9ecef;
+      }
+      
+      .layout-sidebar {
+        padding: 16px;
+        background-color: #f8f9fa;
+        border-right: 1px solid #e9ecef;
+      }
+      
+      .layout-main-content {
+        flex: 1;
+        padding: 16px;
+        position: relative;
+        overflow: auto;
+      }
+      
+      .layout-footer {
+        padding: 16px;
+        background-color: #f8f9fa;
+        border-top: 1px solid #e9ecef;
+      }
+      
+      /* 모바일 최적화 */
+      @media (max-width: 768px) {
+        .layout-sidebar {
+          display: none;
+        }
+        
+        .layout-main-content {
+          width: 100%;
+        }
+      }`;
   }
   
   return `<!DOCTYPE html>
@@ -167,6 +218,7 @@ const generateBuildHTML = (projectName, components) => {
           min-height: 100vh;
         }
       }
+      ${layoutStyles}
     </style>
   </head>
   <body>
@@ -178,8 +230,9 @@ const generateBuildHTML = (projectName, components) => {
 };
 
 // 메인 CSS 생성
-const generateMainCSS = () => {
-  return `/* 웹 빌더로 생성된 CSS */
+const generateMainCSS = (layoutInfo = null) => {
+  // 기본 CSS
+  let css = `/* 웹 빌더로 생성된 CSS */
 body {
   margin: 0;
   padding: 0;
@@ -206,7 +259,59 @@ body {
   height: 100%;
   position: relative;
 }
+`;
 
+  // 레이아웃 관련 스타일 추가
+  if (layoutInfo && layoutInfo.selectedLayout) {
+    css += `
+/* 레이아웃 스타일 - ${layoutInfo.selectedLayout} */
+.layout-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.layout-header {
+  padding: 16px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.layout-sidebar {
+  padding: 16px;
+  background-color: #f8f9fa;
+  border-right: 1px solid #e9ecef;
+}
+
+.layout-main-content {
+  flex: 1;
+  padding: 16px;
+  position: relative;
+  overflow: auto;
+}
+
+.layout-footer {
+  padding: 16px;
+  background-color: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+}
+
+/* 모바일 최적화 */
+@media (max-width: 768px) {
+  .layout-sidebar {
+    display: none;
+  }
+  
+  .layout-main-content {
+    width: 100%;
+  }
+}
+`;
+  }
+
+  // 기본 스타일 추가
+  css += `
 /* 속성 패널 스타일 */
 .property-panel {
   height: 100%;
@@ -246,757 +351,165 @@ body {
 .property-field {
   margin-bottom: 8px;
 }
-
-.add-button,
-.remove-button {
-  padding: 5px 10px;
-  margin-top: 5px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.add-button {
-  background-color: #4a90e2;
-  color: white;
-}
-
-.remove-button {
-  background-color: #e74c3c;
-  color: white;
-}
-
-.delete-button {
-  background-color: #e74c3c;
-  color: white;
-  padding: 8px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-top: 20px;
-}
-
-/* 로그인 컴포넌트 스타일 */
-.login-component {
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-}
-
-.login-form {
-  padding: 20px;
-}
-
-.login-form h3 {
-  margin-top: 0;
-  margin-bottom: 20px;
-  text-align: center;
-  color: #333;
-}
-
-.form-group {
-  margin-bottom: 15px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: 500;
-  color: #555;
-}
-
-.form-group input {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  box-sizing: border-box;
-}
-
-.login-button {
-  width: 100%;
-  padding: 10px;
-  background-color: #4a90e2;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 500;
-  margin-top: 10px;
-}
-
-.login-button:hover {
-  background-color: #3a80d2;
-}
-
-/* 게시판 컴포넌트 스타일 */
-.board-component {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-}
-
-.board-container {
-  padding: 20px;
-}
-
-.board-container h3 {
-  margin-top: 0;
-  margin-bottom: 20px;
-  color: #333;
-}
-
-.board-loading {
-  padding: 20px;
-  text-align: center;
-  color: #666;
-}
-
-.board-loading:after {
-  content: '';
-  display: inline-block;
-  width: 20px;
-  height: 20px;
-  margin-left: 10px;
-  border: 2px solid #ddd;
-  border-radius: 50%;
-  border-top-color: #4a90e2;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.board-error {
-  padding: 20px;
-  text-align: center;
-  color: #e74c3c;
-  background-color: #fdf3f2;
-  border-radius: 4px;
-  margin-bottom: 20px;
-}
-
-.board-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.board-table th,
-.board-table td {
-  padding: 12px 15px;
-  text-align: left;
-  border-bottom: 1px solid #ddd;
-}
-
-.board-table th {
-  background-color: #f8f9fa;
-  font-weight: 600;
-  color: #555;
-}
-
-.board-table tr:hover {
-  background-color: #f8f9fa;
-}
-
-/* 상세 페이지 컴포넌트 스타일 */
-.detail-page-component {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  overflow: auto;
-}
-
-.detail-container {
-  padding: 20px;
-}
-
-.detail-container h2 {
-  margin-top: 0;
-  margin-bottom: 20px;
-  color: #333;
-}
-
-.product-container {
-  display: flex;
-  flex-direction: column;
-}
-
-.product-image {
-  margin-bottom: 20px;
-}
-
-.product-image img {
-  width: 100%;
-  max-height: 300px;
-  object-fit: contain;
-  border-radius: 4px;
-}
-
-.product-info h3 {
-  margin-top: 0;
-  margin-bottom: 10px;
-  color: #555;
-  font-size: 16px;
-}
-
-.product-price p {
-  font-size: 24px;
-  font-weight: 600;
-  color: #e63946;
-  margin: 0 0 20px 0;
-}
-
-.product-description {
-  margin-bottom: 20px;
-}
-
-.product-specs table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 20px;
-}
-
-.product-specs th,
-.product-specs td {
-  padding: 10px;
-  text-align: left;
-  border-bottom: 1px solid #ddd;
-}
-
-.product-specs th {
-  width: 30%;
-  color: #555;
-}
-
-.product-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.cart-button,
-.buy-button {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 500;
-}
-
-.cart-button {
-  background-color: #f8f9fa;
-  color: #333;
-  border: 1px solid #ddd;
-}
-
-.buy-button {
-  background-color: #4a90e2;
-  color: white;
-}
-
-.cart-button:hover {
-  background-color: #e9ecef;
-}
-
-.buy-button:hover {
-  background-color: #3a80d2;
-}
-
-@media (min-width: 768px) {
-  .product-container {
-    flex-direction: row;
-    gap: 30px;
-  }
-  
-  .product-image {
-    flex: 1;
-    margin-bottom: 0;
-  }
-  
-  .product-info {
-    flex: 1;
-  }
-}
 `;
+
+  return css;
 };
 
 // 메인 JavaScript 생성
-const generateMainJS = (components) => {
+const generateMainJS = (components, layoutInfo = null) => {
   // 컴포넌트 렌더링 코드 생성
   let componentsJS = '';
-  components.forEach((component, index) => {
-    const componentVar = `component${index}`;
-    
-    // 컴포넌트 요소 생성
-    componentsJS += `
-  // ${component.type} 컴포넌트 생성
-  const ${componentVar} = document.createElement('div');
-  ${componentVar}.style.position = 'absolute';
-  ${componentVar}.style.left = '${component.position.x}px';
-  ${componentVar}.style.top = '${component.position.y}px';
-  ${componentVar}.style.width = '${component.size.width}px';
-  ${componentVar}.style.height = '${component.size.height}px';
-  `;
-    
-    // 컴포넌트 타입별 추가 속성
+  components.forEach(component => {
     switch(component.type) {
       case 'TEXT':
-        componentsJS += `${componentVar}.innerText = \`${component.content || ''}\`;\n`;
+        componentsJS += `
+  // 텍스트 컴포넌트 생성 - ${component.id}
+  const text_${component.id} = document.createElement('div');
+  text_${component.id}.style.position = 'absolute';
+  text_${component.id}.style.left = '${component.position.x}px';
+  text_${component.id}.style.top = '${component.position.y}px';
+  text_${component.id}.style.width = '${component.size.width}';
+  text_${component.id}.style.height = '${component.size.height}px';
+  ${Object.entries(component.style || {}).map(([key, value]) => `text_${component.id}.style.${key} = '${value}';`).join('\n  ')}
+  text_${component.id}.innerHTML = \`${component.content.replace(/`/g, '\\`')}\`;
+  contentContainer.appendChild(text_${component.id});
+`;
         break;
       case 'IMAGE':
         componentsJS += `
-  const img = document.createElement('img');
-  img.src = '${component.content?.src || ''}';
-  img.alt = '${component.content?.alt || ''}';
-  img.style.width = '100%';
-  img.style.height = '100%';
-  ${componentVar}.appendChild(img);
-        `;
+  // 이미지 컴포넌트 생성 - ${component.id}
+  const img_${component.id} = document.createElement('img');
+  img_${component.id}.src = '${component.content.src}';
+  img_${component.id}.alt = '${component.content.alt || ''}';
+  img_${component.id}.style.position = 'absolute';
+  img_${component.id}.style.left = '${component.position.x}px';
+  img_${component.id}.style.top = '${component.position.y}px';
+  img_${component.id}.style.width = '${component.size.width}';
+  img_${component.id}.style.height = '${component.size.height}px';
+  ${Object.entries(component.style || {}).map(([key, value]) => `img_${component.id}.style.${key} = '${value}';`).join('\n  ')}
+  contentContainer.appendChild(img_${component.id});
+`;
+        break;
+      case 'CONTAINER':
+        componentsJS += `
+  // 컨테이너 컴포넌트 생성 - ${component.id}
+  const container_${component.id} = document.createElement('div');
+  container_${component.id}.style.position = 'absolute';
+  container_${component.id}.style.left = '${component.position.x}px';
+  container_${component.id}.style.top = '${component.position.y}px';
+  container_${component.id}.style.width = '${component.size.width}';
+  container_${component.id}.style.height = '${component.size.height}px';
+  ${Object.entries(component.style || {}).map(([key, value]) => `container_${component.id}.style.${key} = '${value}';`).join('\n  ')}
+  contentContainer.appendChild(container_${component.id});
+`;
         break;
       case 'BUTTON':
         componentsJS += `
-  const button = document.createElement('button');
-  button.innerText = \`${component.content || '버튼'}\`;
-  button.style.width = '100%';
-  button.style.height = '100%';
-  ${componentVar}.appendChild(button);
-        `;
-        break;
-      case 'CONTAINER':
-        componentsJS += `${componentVar}.className = 'container-component';\n`;
-        break;
-      case 'LOGIN':
-        const loginTitle = component.data?.title || '로그인';
-        const loginButtonColor = component.style?.buttonColor || '#4a90e2';
-        const loginApiUrl = component.data?.apiUrl || 'https://api.example.com/login';
-        
-        componentsJS += `
-  ${componentVar}.className = 'login-component';
-  ${componentVar}.innerHTML = \`
-    <div class="login-form">
-      <h3>${loginTitle}</h3>
-      <form id="login-form-${index}">
-        <div class="form-group">
-          <label for="username-${index}">아이디</label>
-          <input type="text" id="username-${index}" placeholder="아이디를 입력하세요" />
-        </div>
-        <div class="form-group">
-          <label for="password-${index}">비밀번호</label>
-          <input type="password" id="password-${index}" placeholder="비밀번호를 입력하세요" />
-        </div>
-        <div class="login-message" style="display: none; margin: 10px 0; padding: 10px; border-radius: 4px;"></div>
-        <button type="submit" class="login-button" style="background-color: ${loginButtonColor}">로그인</button>
-      </form>
-    </div>
-  \`;
+  // 버튼 컴포넌트 생성 - ${component.id}
+  const button_${component.id} = document.createElement('button');
+  button_${component.id}.style.position = 'absolute';
+  button_${component.id}.style.left = '${component.position.x}px';
+  button_${component.id}.style.top = '${component.position.y}px';
+  button_${component.id}.style.width = '${component.size.width}';
+  button_${component.id}.style.height = '${component.size.height}px';
+  ${Object.entries(component.style || {}).map(([key, value]) => `button_${component.id}.style.${key} = '${value}';`).join('\n  ')}
+  button_${component.id}.textContent = '${component.content}';
   
-  // 로그인 폼 이벤트 리스너 추가
-  setTimeout(() => {
-    const loginForm = document.getElementById('login-form-${index}');
-    const usernameInput = document.getElementById('username-${index}');
-    const passwordInput = document.getElementById('password-${index}');
-    const messageDiv = ${componentVar}.querySelector('.login-message');
-    
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const username = usernameInput.value.trim();
-      const password = passwordInput.value.trim();
-      
-      // 입력 검증
-      if (!username || !password) {
-        messageDiv.style.display = 'block';
-        messageDiv.style.backgroundColor = '#fdf3f2';
-        messageDiv.style.color = '#e74c3c';
-        messageDiv.textContent = '아이디와 비밀번호를 모두 입력해주세요.';
-        return;
-      }
-      
-      // 로그인 버튼 비활성화 및 로딩 표시
-      const loginButton = loginForm.querySelector('.login-button');
-      const originalText = loginButton.textContent;
-      loginButton.disabled = true;
-      loginButton.textContent = '로그인 중...';
-      
-      try {
-        // 실제 환경에서는 아래 주석 해제하여 사용
-        const response = await fetch('${loginApiUrl}', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ username, password })
-        });
-        
-        if (!response.ok) {
-          throw new Error('로그인 실패');
-        }
-        
-        const data = await response.json();
-        
-        if (data.success) {
-          // 로그인 성공
-          messageDiv.style.display = 'block';
-          messageDiv.style.backgroundColor = '#e8f5e9';
-          messageDiv.style.color = '#388e3c';
-          messageDiv.textContent = '로그인 성공! 환영합니다.';
-          
-          // 세션 스토리지에 로그인 정보 저장
-          sessionStorage.setItem('isLoggedIn', 'true');
-          sessionStorage.setItem('username', username);
-          
-          // 3초 후 메시지 숨기기
-          setTimeout(() => {
-            messageDiv.style.display = 'none';
-          }, 3000);
-        } else {
-          // 로그인 실패
-          messageDiv.style.display = 'block';
-          messageDiv.style.backgroundColor = '#fdf3f2';
-          messageDiv.style.color = '#e74c3c';
-          messageDiv.textContent = '아이디 또는 비밀번호가 올바르지 않습니다.';
-        }
-      } catch (error) {
-        console.error('로그인 오류:', error);
-        messageDiv.style.display = 'block';
-        messageDiv.style.backgroundColor = '#fdf3f2';
-        messageDiv.style.color = '#e74c3c';
-        messageDiv.textContent = '로그인 처리 중 오류가 발생했습니다. 다시 시도해주세요.';
-      } finally {
-        // 로그인 버튼 다시 활성화
-        loginButton.disabled = false;
-        loginButton.textContent = originalText;
-      }
-    });
-  }, 500);
-        `;
+  // 버튼 클릭 이벤트 추가
+  button_${component.id}.addEventListener('click', function() {
+    alert('버튼이 클릭되었습니다!');
+  });
+  
+  contentContainer.appendChild(button_${component.id});
+`;
         break;
-      case 'BOARD':
-        // 게시판 데이터 처리
-        let boardItems = [];
-        let boardTitle = '게시판';
-        let boardParameter = '';
-        
-        // 데이터 구조에 따라 다르게 처리
-        if (Array.isArray(component.data)) {
-          boardItems = component.data;
-        } else if (component.data) {
-          boardItems = component.data.items || [];
-          boardTitle = component.data.title || '게시판';
-          boardParameter = component.data.parameter || '';
-        }
-        
-        
-        let boardRows = '';
-        
-        boardItems.forEach(post => {
-          boardRows += `
-            <tr>
-              <td>${post.id || ''}</td>
-              <td>${post.title || ''}</td>
-              <td>${post.author || ''}</td>
-              <td>${post.date || ''}</td>
-              <td>${post.views || 0}</td>
-            </tr>
-          `;
-        });
-        
-        componentsJS += `
-  ${componentVar}.className = 'board-component';
-  ${componentVar}.setAttribute('data-parameter', '${boardParameter}');
-  
-  // 게시판 HTML 구조 생성
-  ${componentVar}.innerHTML = \`
-    <div class="board-container">
-      <h3>${boardTitle}</h3>
-      <div class="board-loading" style="display: none; text-align: center; padding: 20px;">
-        <p>데이터를 불러오는 중...</p>
-      </div>
-      <div class="board-error" style="display: none; text-align: center; padding: 20px; color: #e74c3c;">
-        <p>데이터를 불러오는 중 오류가 발생했습니다.</p>
-      </div>
-      <table class="board-table">
-        <thead>
-          <tr>
-            <th>번호</th>
-            <th>제목</th>
-            <th>작성자</th>
-            <th>날짜</th>
-            <th>조회</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${boardRows}
-        </tbody>
-      </table>
-    </div>
-  \`;
-  
-  // 파라미터가 있는 경우 API에서 데이터 가져오기
-  if ('${boardParameter}') {
-    // 게시판 데이터 로드 함수
-    const loadBoardData = async (boardElement) => {
-      const parameter = boardElement.getAttribute('data-parameter');
-      const boardContainer = boardElement.querySelector('.board-container');
-      const loadingElement = boardElement.querySelector('.board-loading');
-      const errorElement = boardElement.querySelector('.board-error');
-      const tableElement = boardElement.querySelector('.board-table');
-      
-      // 로딩 표시
-      loadingElement.style.display = 'block';
-      tableElement.style.display = 'none';
-      errorElement.style.display = 'none';
-      
-      try {
-        // 파라미터 값에 따라 다른 API 엔드포인트 사용
-        let apiUrl = '';
-        
-        switch(parameter) {
-          case 'board1':
-            apiUrl = 'http://49.247.174.32:8080/first-board';
-            break;
-          case 'board2':
-            apiUrl = 'http://49.247.174.32:8080/second-board';
-            break;
-          case 'board3':
-            apiUrl = 'http://49.247.174.32:8080/third-board';
-            break;
-          case 'board4':
-            apiUrl = 'http://49.247.174.32:8080/gallery-board';
-            break;
-          default:
-            // 기본 API 엔드포인트
-            apiUrl = 'https://api.example.com/boards/default';
-        }
-        
-        // API 호출 (fetch 사용)
-        const fetchBoardData = async () => {
-          try {
-            // 실제 API 호출로 데이터 가져오기
-            const response = await fetch(apiUrl);
-            if (!response.ok) throw new Error('API 응답 오류');
-            const responseData = await response.json();
-            const data = responseData.content || [];
-            
-            // 예시 데이터 (API 호출이 실패할 경우 사용할 수 있음)
-            /* 
-            const data = [
-              { id: 1, title: '파라미터 ' + parameter + ' - 게시글 1', author: '작성자1', date: '2023-06-01', views: 42 },
-              { id: 2, title: '파라미터 ' + parameter + ' - 게시글 2', author: '작성자2', date: '2023-06-02', views: 31 },
-              { id: 3, title: '파라미터 ' + parameter + ' - 게시글 3', author: '작성자3', date: '2023-06-03', views: 28 },
-              { id: 4, title: '파라미터 ' + parameter + ' - 게시글 4', author: '작성자4', date: '2023-06-04', views: 15 },
-              { id: 5, title: '파라미터 ' + parameter + ' - 게시글 5', author: '작성자5', date: '2023-06-05', views: 22 }
-            ];
-            */
-            
-            // 테이블 내용 업데이트
-            const tbody = tableElement.querySelector('tbody');
-            tbody.innerHTML = '';
-            
-            data.forEach(post => {
-              const row = document.createElement('tr');
-              row.innerHTML = \`
-                <td>\${post.id}</td>
-                <td>\${post.title}</td>
-                <td>\${post.name || post.author || ''}</td>
-                <td>\${post.createdAt ? new Date(post.createdAt).toLocaleDateString() : (post.date || '')}</td>
-                <td>\${post.viewCount || post.views || 0}</td>
-              \`;
-              tbody.appendChild(row);
-            });
-            
-            // 로딩 숨기고 테이블 표시
-            loadingElement.style.display = 'none';
-            tableElement.style.display = 'table';
-          } catch (error) {
-            console.error('API 호출 오류:', error);
-            loadingElement.style.display = 'none';
-            errorElement.style.display = 'block';
-          }
-        };
-        
-        // API 호출 실행 (1초 지연 시뮬레이션)
-        setTimeout(fetchBoardData, 1000);
-      } catch (error) {
-        console.error('게시판 데이터 로드 실패:', error);
-        loadingElement.style.display = 'none';
-        errorElement.style.display = 'block';
-      }
-    };
-    
-    // DOMContentLoaded 이벤트에서 데이터 로드 함수 호출
-    setTimeout(() => {
-      loadBoardData(${componentVar});
-    }, 500);
-  }
-        `;
-        break;
-      case 'DETAIL_PAGE':
-        const productData = component.data || {};
-        const productId = productData.productId || '1';
-        const detailApiUrl = productData.apiUrl || 'https://api.example.com/products';
-        
-        componentsJS += `
-  ${componentVar}.className = 'detail-page-component';
-  ${componentVar}.setAttribute('data-product-id', '${productId}');
-  
-  // 상세 페이지 기본 구조
-  ${componentVar}.innerHTML = \`
-    <div class="detail-container">
-      <div class="detail-loading" style="display: block; text-align: center; padding: 40px;">
-        <p>상품 정보를 불러오는 중...</p>
-      </div>
-      <div class="detail-error" style="display: none; text-align: center; padding: 40px; color: #e74c3c;">
-        <p>상품 정보를 불러오는 중 오류가 발생했습니다.</p>
-        <button class="retry-button" style="padding: 8px 16px; background-color: #4a90e2; color: white; border: none; border-radius: 4px; margin-top: 10px;">다시 시도</button>
-      </div>
-      <div class="product-content" style="display: none;">
-        <h2 class="product-title">상품 상세 페이지</h2>
-        <div class="product-container">
-          <div class="product-image">
-            <img src="" alt="상품 이미지" />
-          </div>
-          <div class="product-info">
-            <div class="product-price">
-              <h3>가격</h3>
-              <p class="price-value"></p>
-            </div>
-            <div class="product-description">
-              <h3>제품 설명</h3>
-              <p class="description-text"></p>
-            </div>
-            <div class="product-specs">
-              <h3>제품 스펙</h3>
-              <table>
-                <tbody class="specs-table-body">
-                </tbody>
-              </table>
-            </div>
-            <div class="product-actions">
-              <button class="cart-button">장바구니 담기</button>
-              <button class="buy-button">바로 구매하기</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  \`;
-  
-  // 상품 데이터 로드 함수
-  setTimeout(() => {
-    const loadProductData = async () => {
-      const productId = ${componentVar}.getAttribute('data-product-id');
-      const detailContainer = ${componentVar}.querySelector('.detail-container');
-      const loadingElement = ${componentVar}.querySelector('.detail-loading');
-      const errorElement = ${componentVar}.querySelector('.detail-error');
-      const productContent = ${componentVar}.querySelector('.product-content');
-      
-      try {
-        // 실제 환경에서는 아래 주석 해제하여 사용
-        const response = await fetch(\`${detailApiUrl}/\${productId}\`);
-        if (!response.ok) throw new Error('API 응답 오류');
-        const data = await response.json();
-        
-        // 데이터 표시
-        const titleElement = ${componentVar}.querySelector('.product-title');
-        const imageElement = ${componentVar}.querySelector('.product-image img');
-        const priceElement = ${componentVar}.querySelector('.price-value');
-        const descriptionElement = ${componentVar}.querySelector('.description-text');
-        const specsTableBody = ${componentVar}.querySelector('.specs-table-body');
-        
-        titleElement.textContent = data.title;
-        imageElement.src = data.image;
-        imageElement.alt = data.title;
-        priceElement.textContent = data.price;
-        descriptionElement.textContent = data.description;
-        
-        // 스펙 테이블 생성
-        specsTableBody.innerHTML = '';
-        if (data.specs && Array.isArray(data.specs)) {
-          data.specs.forEach(spec => {
-            const row = document.createElement('tr');
-            row.innerHTML = \`
-              <th>\${spec.label}</th>
-              <td>\${spec.value}</td>
-            \`;
-            specsTableBody.appendChild(row);
-          });
-        }
-        
-        // 버튼 이벤트 리스너 추가
-        const cartButton = ${componentVar}.querySelector('.cart-button');
-        const buyButton = ${componentVar}.querySelector('.buy-button');
-        
-        cartButton.addEventListener('click', () => {
-          alert('장바구니에 추가되었습니다: ' + data.title);
-        });
-        
-        buyButton.addEventListener('click', () => {
-          alert('구매 페이지로 이동합니다: ' + data.title);
-        });
-        
-        // 로딩 숨기고 콘텐츠 표시
-        loadingElement.style.display = 'none';
-        productContent.style.display = 'block';
-      } catch (error) {
-        console.error('상품 데이터 로드 실패:', error);
-        loadingElement.style.display = 'none';
-        errorElement.style.display = 'block';
-        
-        // 재시도 버튼 이벤트 리스너
-        const retryButton = errorElement.querySelector('.retry-button');
-        retryButton.addEventListener('click', () => {
-          errorElement.style.display = 'none';
-          loadingElement.style.display = 'block';
-          loadProductData();
-        });
-      }
-    };
-    
-    // 상품 데이터 로드 실행
-    loadProductData();
-  }, 500);
-        `;
-        break;
+      // 다른 컴포넌트 타입 추가 가능
       default:
         break;
     }
-    
-    // 스타일 적용
-    if (component.style) {
-      Object.entries(component.style).forEach(([key, value]) => {
-        // buttonColor는 이미 처리했으므로 스킵
-        if (key !== 'buttonColor') {
-          componentsJS += `${componentVar}.style.${key} = '${value}';\n`;
-        }
-      });
-    }
-    
-    // 캔버스에 추가
-    componentsJS += `canvas.appendChild(${componentVar});\n`;
   });
   
-  // 전체 JavaScript 코드
-  return `// 웹 빌더로 생성된 JavaScript 코드
-document.addEventListener('DOMContentLoaded', function() {
-  // 앱 컨테이너 생성
-  const app = document.createElement('div');
-  app.className = 'App';
+  // 레이아웃 요소 생성 코드
+  let layoutJS = '';
+  let contentWrapperStart = '';
+  let contentWrapperEnd = '';
   
-  // 캔버스 생성
+  if (layoutInfo && layoutInfo.selectedLayout) {
+    layoutJS = `
+  // 레이아웃 생성 - ${layoutInfo.selectedLayout}
+  const layoutContainer = document.createElement('div');
+  layoutContainer.className = 'layout-container';
+  
+  // 헤더 생성
+  const layoutHeader = document.createElement('header');
+  layoutHeader.className = 'layout-header';
+  layoutHeader.textContent = '${layoutInfo.layoutProps.title || 'Header'}';
+  layoutContainer.appendChild(layoutHeader);
+  
+  // 메인 컨텐츠 영역 생성
+  const layoutMainContent = document.createElement('main');
+  layoutMainContent.className = 'layout-main-content';
+  
+  // 푸터 생성
+  const layoutFooter = document.createElement('footer');
+  layoutFooter.className = 'layout-footer';
+  layoutFooter.textContent = '${layoutInfo.layoutProps.footer || `© ${new Date().getFullYear()}`}';
+  
+  // 컨텐츠 컨테이너 변수 설정 (이 변수에 컴포넌트들이 추가됨)
+  let contentContainer = layoutMainContent;
+    `;
+    
+    contentWrapperStart = `
+  // 컴포넌트 추가
+    `;
+    
+    contentWrapperEnd = `
+  // 레이아웃 조립
+  layoutContainer.appendChild(layoutMainContent);
+  layoutContainer.appendChild(layoutFooter);
+  
+  // 앱에 레이아웃 추가
+  app.appendChild(layoutContainer);
+    `;
+  } else {
+    // 레이아웃이 없는 경우
+    layoutJS = `
+  // 기본 캔버스 생성
   const canvas = document.createElement('div');
   canvas.className = 'canvas';
   
-  // 컴포넌트 생성 및 추가
-  ${componentsJS}
-  
-  // DOM에 추가
+  // 컨텐츠 컨테이너 변수 설정
+  let contentContainer = canvas;
+    `;
+    
+    contentWrapperStart = `
+  // 컴포넌트 추가
+    `;
+    
+    contentWrapperEnd = `
+  // 앱에 캔버스 추가
   app.appendChild(canvas);
-  document.getElementById('root').appendChild(app);
+    `;
+  }
+  
+  // JavaScript 코드 생성 (전체 구조)
+  return `// 웹 빌더로 생성된 JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+  // root 요소 가져오기
+  const root = document.getElementById('root');
+  
+  // App 컴포넌트 생성
+  const app = document.createElement('div');
+  app.className = 'App';
+  
+  ${layoutJS}
+  ${contentWrapperStart}
+  ${componentsJS}
+  ${contentWrapperEnd}
+  
+  // App을 root에 추가
+  root.appendChild(app);
 });
 `;
 };
