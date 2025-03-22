@@ -14,7 +14,7 @@ const LayoutOne = ({ children, headerContainerClass, headerTop, headerPaddingCla
         headerPaddingClass={headerPaddingClass}
         headerPositionClass={headerPositionClass}
       />
-      <main>
+      <main style={{ paddingLeft: '5vw', paddingRight: '5vw' }}>
         {children}
       </main>
       <FooterOne
