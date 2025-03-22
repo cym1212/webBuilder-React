@@ -25,6 +25,15 @@ function EditorCanvas() {
   const [isScrolling, setIsScrolling] = useState(false);
   const [scrollDirection, setScrollDirection] = useState(null); // 'up', 'down'
   const [isDraggingComponent, setIsDraggingComponent] = useState(false);
+  // 화면 크기 모드 상태 추가
+  const [viewMode, setViewMode] = useState('pc'); // 'pc', 'tablet', 'mobile'
+
+  // 화면 크기 설정
+  const viewSizes = {
+    pc: { width: '100%', maxWidth: '100%' },
+    tablet: { width: '768px', maxWidth: '768px' },
+    mobile: { width: '375px', maxWidth: '375px' }
+  };
 
   // 스크롤 컨트롤을 위한 참조
   const canvasRef = useRef(null);
@@ -69,13 +78,24 @@ function EditorCanvas() {
 
   // 빈 캔버스 영역 클릭 핸들러
   const handleCanvasClick = (e) => {
+    // className이 문자열인지 객체인지 확인하고 그에 따라 처리
     // 이벤트가 캔버스 자체에서 발생했는지 확인 (버블링된 이벤트가 아닌지)
-    if (e.target === e.currentTarget ||
-        e.target.className === 'layout-main-content' ||
-        e.target.className.includes('editor-canvas')) {
+    const isTargetCanvasOrMainContent = e.target === e.currentTarget || 
+      e.target.className === 'layout-main-content';
+    
+    // className이 문자열인 경우에만 includes 메서드 사용
+    const hasEditorCanvasClass = typeof e.target.className === 'string' && 
+      e.target.className.includes('editor-canvas');
+    
+    if (isTargetCanvasOrMainContent || hasEditorCanvasClass) {
       // 모든 컴포넌트 선택 해제 (selectComponent에 null 전달)
       dispatch(selectComponent(null));
     }
+  };
+
+  // 화면 모드 변경 핸들러
+  const handleViewModeChange = (mode) => {
+    setViewMode(mode);
   };
 
   // 컴포넌트의 최대 Y 위치를 계산하여 메인 영역 높이 결정
@@ -521,6 +541,45 @@ function EditorCanvas() {
     );
   };
 
+  // 화면 크기 선택 버튼 렌더링 함수
+  const renderViewModeSelector = () => {
+    return (
+      <div className="view-mode-selector">
+        <button 
+          className={`view-mode-button ${viewMode === 'pc' ? 'active' : ''}`}
+          onClick={() => handleViewModeChange('pc')}
+          title="PC 화면"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="4" width="20" height="14" rx="2" stroke="currentColor" strokeWidth="2"/>
+            <path d="M8 18H16" stroke="currentColor" strokeWidth="2"/>
+            <path d="M12 18V20" stroke="currentColor" strokeWidth="2"/>
+          </svg>
+        </button>
+        <button 
+          className={`view-mode-button ${viewMode === 'tablet' ? 'active' : ''}`}
+          onClick={() => handleViewModeChange('tablet')}
+          title="태블릿 화면"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="5" y="2" width="14" height="20" rx="2" stroke="currentColor" strokeWidth="2"/>
+            <path d="M12 18H12.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+        </button>
+        <button 
+          className={`view-mode-button ${viewMode === 'mobile' ? 'active' : ''}`}
+          onClick={() => handleViewModeChange('mobile')}
+          title="모바일 화면"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="7" y="3" width="10" height="18" rx="2" stroke="currentColor" strokeWidth="2"/>
+            <path d="M12 19H12.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+        </button>
+      </div>
+    );
+  };
+
   return (
     <div 
       id="editor-canvas"
@@ -530,17 +589,37 @@ function EditorCanvas() {
       }}  
       className={`editor-canvas ${isOver ? 'drop-active' : ''} ${isDraggingComponent ? 'dragging-over' : ''}`}
       style={{ 
-        backgroundColor: isOver ? '#f0f8ff' : 'white',
         position: 'relative',
         width: '100%',
         height: '100%',
         overflow: 'auto',
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'stretch'
+        alignItems: 'stretch',
+        backgroundColor: 'transparent'
       }}
       onClick={handleCanvasClick}
     >
+      {/* 격자 무늬 배경 추가 - 직접 스타일링 적용 */}
+      <div 
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: '#f5f5f5',
+          backgroundImage: 'linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px)',
+          backgroundSize: '20px 20px',
+          zIndex: 0
+        }}
+      />
+      
+      {/* 화면 모드 선택 버튼 추가 */}
+      <div className="editor-canvas-header" style={{ position: 'relative', zIndex: 1 }}>
+        {renderViewModeSelector()}
+      </div>
+      
       {/* 스크롤 안내 요소 */}
       {isDraggingComponent && (
         <>
@@ -554,7 +633,18 @@ function EditorCanvas() {
       )}
       
       {LayoutComponent ? (
-        <div className="layout-container" style={{ position: 'relative', height: '100%', width: '100%' }}>
+        <div 
+          className="layout-container" 
+          style={{ 
+            position: 'relative', 
+            height: '100%', 
+            width: viewSizes[viewMode].width,
+            maxWidth: viewSizes[viewMode].maxWidth,
+            margin: '0 auto',
+            transition: 'width 0.3s, max-width 0.3s',
+            zIndex: 1,
+          }}
+        >
           <LayoutComponent {...layoutProps}>
             {/* 레이아웃 내부에 메인 컨텐츠 영역을 정의하고, 그 안에 컴포넌트 배치 */}
             <div 
@@ -564,12 +654,13 @@ function EditorCanvas() {
                 minHeight: `${mainContentHeight}px`, 
                 padding: '0px',
                 width: '100%',
-                backgroundColor: isOver ? 'rgba(0, 123, 255, 0.05)' : 'transparent',
+                backgroundColor: isOver ? 'rgba(0, 123, 255, 0.05)' : 'white',
                 border: isOver ? '2px dashed #007bff' : 'none',
-                transition: 'background-color 0.3s, border 0.3s',
+                transition: 'width 0.3s, max-width 0.3s',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '15px'
+                gap: '15px',
+                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24)'
               }}
               onClick={handleCanvasClick}
             >
@@ -584,13 +675,23 @@ function EditorCanvas() {
         </div>
       ) : (
         // 레이아웃이 없는 경우 순서대로 컴포넌트 렌더링
-        <div className="editor-content" style={{ 
-          display: 'flex', 
-          flexDirection: 'column', 
-          gap: '15px',
-          width: '100%',
-          padding: '0px' 
-        }}>
+        <div 
+          className="editor-content" 
+          style={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            gap: '15px',
+            width: viewSizes[viewMode].width,
+            maxWidth: viewSizes[viewMode].maxWidth,
+            margin: '0 auto',
+            padding: '0px',
+            transition: 'width 0.3s, max-width 0.3s',
+            backgroundColor: 'white',
+            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24)',
+            zIndex: 1,
+            position: 'relative'
+          }}
+        >
           {/* 위치가 아닌 order 값으로 정렬하여 렌더링 */}
           {rootComponents
             .slice()

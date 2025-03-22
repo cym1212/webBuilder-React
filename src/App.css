@@ -821,3 +821,49 @@ body {
   min-height: 80px;
   resize: vertical;
 }
+
+/* 뷰 모드 선택기 스타일 */
+.editor-canvas-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 12px 0;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  width: 100%;
+  text-align: center;
+}
+
+.view-mode-selector {
+  display: inline-flex;
+  gap: 8px;
+  background-color: #edf2f7;
+  padding: 4px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.view-mode-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background-color: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #64748b;
+  transition: all 0.2s ease;
+}
+
+.view-mode-button:hover {
+  background-color: #e2e8f0;
+  color: #334155;
+}
+
+.view-mode-button.active {
+  background-color: #fff;
+  color: #4361ee;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
