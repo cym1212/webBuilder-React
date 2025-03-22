@@ -430,7 +430,7 @@ function ComponentRenderer({ component }) {
       {renderComponent()}
       
       {/* 리사이즈 핸들 - 모든 컴포넌트에 제공 */}
-      <>
+      {/* <>
         <div className="resize-handle e" onMouseDown={(e) => handleResizeStart(e, 'e')}></div>
         <div className="resize-handle w" onMouseDown={(e) => handleResizeStart(e, 'w')}></div>
         <div className="resize-handle s" onMouseDown={(e) => handleResizeStart(e, 's')}></div>
@@ -439,7 +439,7 @@ function ComponentRenderer({ component }) {
         <div className="resize-handle sw" onMouseDown={(e) => handleResizeStart(e, 'sw')}></div>
         <div className="resize-handle ne" onMouseDown={(e) => handleResizeStart(e, 'ne')}></div>
         <div className="resize-handle nw" onMouseDown={(e) => handleResizeStart(e, 'nw')}></div>
-      </>
+      </> */}
     </div>
   );
 }
